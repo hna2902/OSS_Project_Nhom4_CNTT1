@@ -73,11 +73,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'OSS_Project.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Dùng SQLite để tránh lỗi
+    'default': {  # Dùng SQLite cho Django Admin
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / "db.sqlite3",
     }
 }
+
+# Kết nối MongoDB bằng pymongo (vì Django không hỗ trợ trực tiếp)
+MONGO_DB_NAME = "QLHT"
+MONGO_CLIENT = "mongodb://localhost:27017/"
 
 
 
