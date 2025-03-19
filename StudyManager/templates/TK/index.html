@@ -14,15 +14,15 @@
         </tr>
     </thead>
     <tbody>
-        {% for tk in taikhoan %}
+        {% for tk in taikhoans %}
         <tr>
             <td>{{ tk.TaiKhoan }}</td>
-            <td>••••••••</td>  <!-- Ẩn mật khẩu -->
+            <td>••••••••</td>  
             <td>{{ tk.Quyen|yesno:"Admin,User" }}</td>
             <td>{{ tk.MaNguoiDung }}</td>
         </tr>
         {% empty %}
-        <tr><td colspan="4" class="text-center text-muted">Không có tài khoản nào.</td></tr>
+            <tr><td colspan="4" class="text-center text-muted">Không có tài khoản nào.</td></tr>
         {% endfor %}
     </tbody>
 </table>
