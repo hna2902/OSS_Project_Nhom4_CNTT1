@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block title %}Danh sách Tài Khoản{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Danh sách Tài Khoản</h2>
+<table class="table table-bordered table-striped">
+    <thead class="table-warning">
+        <tr>
+            <th>Tên Đăng Nhập</th>
+            <th>Mật Khẩu (Hash)</th>
+            <th>Quyền</th>
+            <th>Mã Người Dùng</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tk in taikhoan %}
+        <tr>
+            <td>{{ tk.TaiKhoan }}</td>
+            <td>••••••••</td>  <!-- Ẩn mật khẩu -->
+            <td>{{ tk.Quyen|yesno:"Admin,User" }}</td>
+            <td>{{ tk.MaNguoiDung }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted">Không có tài khoản nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

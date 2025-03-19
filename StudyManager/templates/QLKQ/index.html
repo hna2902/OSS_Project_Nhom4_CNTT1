@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+
+{% block title %}Danh sách Kết Quả Học Tập{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Danh sách Kết Quả Học Tập</h2>
+<table class="table table-bordered table-striped">
+    <thead class="table-primary">
+        <tr>
+            <th>Mã Người Dùng</th>
+            <th>Mã Kết Quả</th>
+            <th>Mã Môn</th>
+            <th>Tên Môn</th>
+            <th>Điểm Hệ 10</th>
+            <th>Điểm Hệ 4</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for kq in ketqua %}
+        <tr>
+            <td>{{ kq.MaNguoiDung }}</td>
+            <td>{{ kq.MaKetQuaHoc }}</td>
+            <td>{{ kq.MaMon }}</td>
+            <td>{{ kq.TenMon }}</td>
+            <td>{{ kq.DiemHe10 }}</td>
+            <td>{{ kq.DiemHe4 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted">Không có kết quả học tập nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

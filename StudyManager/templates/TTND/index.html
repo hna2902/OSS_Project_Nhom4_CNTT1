@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+
+{% block title %}Thông Tin Người Dùng{% endblock %}
+{% block content %}
+<h2 class="mb-3">Danh sách Người Dùng</h2>
+<table class="table table-bordered table-striped">
+    <thead class="table-info">
+        <tr>
+            <th>Mã</th>
+            <th>Tài Khoản</th>
+            <th>Tên</th>
+            <th>Email</th>
+            <th>SĐT</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for nd in nguoidung %}
+        <tr>
+            <td>{{ nd.MaNguoiDung }}</td>
+            <td>{{ nd.TaiKhoan }}</td>
+            <td>{{ nd.Ten }}</td>
+            <td>{{ nd.Email }}</td>
+            <td>{{ nd.SDT }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center text-muted">Không có dữ liệu.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

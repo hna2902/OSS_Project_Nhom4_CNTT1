@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block title %}Thời Khóa Biểu{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Thời Khóa Biểu</h2>
+<table class="table table-bordered table-striped">
+    <thead class="table-danger">
+        <tr>
+            <th>Mã TKB</th>
+            <th>Môn Học</th>
+            <th>Thứ</th>
+            <th>Thời Gian</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tkb in thoikhoabieu %}
+        <tr>
+            <td>{{ tkb.MaTKB }}</td>
+            <td>{{ tkb.MonHoc }}</td>
+            <td>{{ tkb.Thu }}</td>
+            <td>{{ tkb.ThoiGianHoc }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted">Không có dữ liệu.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
