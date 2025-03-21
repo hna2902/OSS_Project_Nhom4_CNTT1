@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password, check_password
 from .database import db  # Import kết nối MongoDB
 
 class TaiKhoan:
@@ -5,26 +6,41 @@ class TaiKhoan:
     collection = db["TaiKhoan"]
 
     @staticmethod
-    def insert(id, tai_khoan, mat_khau, quyen, ma_nguoi_dung):
+    def insert(tai_khoan, email, mat_khau, quyen="User"):
+        """ Thêm tài khoản mới với mật khẩu đã hash """
         TaiKhoan.collection.insert_one({
-            "Id": id,
             "TaiKhoan": tai_khoan,
-            "MatKhau": mat_khau,
-            "Quyen": quyen,
-            "MaNguoiDung": ma_nguoi_dung
+            "Email": email,
+            "MatKhauHash": make_password(mat_khau),  # Hash mật khẩu
+            "Quyen": quyen  # "Admin" hoặc "User"
         })
 
     @staticmethod
     def get_by_tai_khoan(tai_khoan):
+        """ Lấy thông tin tài khoản theo username """
         return TaiKhoan.collection.find_one({"TaiKhoan": tai_khoan})
 
     @staticmethod
+    def check_password(tai_khoan, mat_khau):
+        """ Kiểm tra mật khẩu nhập vào có đúng không """
+        user = TaiKhoan.get_by_tai_khoan(tai_khoan)
+        if user:
+            return check_password(mat_khau, user["MatKhauHash"])
+        return False
+
+    @staticmethod
     def update_mat_khau(tai_khoan, new_password):
-        TaiKhoan.collection.update_one({"TaiKhoan": tai_khoan}, {"$set": {"MatKhau": new_password}})
+        """ Cập nhật mật khẩu mới (có hash) """
+        TaiKhoan.collection.update_one(
+            {"TaiKhoan": tai_khoan},
+            {"$set": {"MatKhauHash": make_password(new_password)}}
+        )
 
     @staticmethod
     def delete(tai_khoan):
+        """ Xóa tài khoản """
         TaiKhoan.collection.delete_one({"TaiKhoan": tai_khoan})
+
 
 
 class QLMonHoc:
