@@ -1,45 +1,33 @@
 from django.contrib.auth.hashers import make_password, check_password
-from .database import db  # Import kết nối MongoDB
+from .database import db  
 
 class TaiKhoan:
     """ Quản lý tài khoản người dùng """
     collection = db["TaiKhoan"]
+    counter_collection = db["counters"]
 
     @staticmethod
-    def insert(tai_khoan, email, mat_khau, quyen="User"):
-        """ Thêm tài khoản mới với mật khẩu đã hash """
+    def get_next_user_id():
+        # Tăng giá trị bộ đếm và lấy giá trị mới
+        result = TaiKhoan.counter_collection.find_one_and_update(
+            {"_id": "userID"},
+            {"$inc": {"sequence_value": 1}},
+            return_document=True
+        )
+        new_id = result["sequence_value"]
+        return f"UID{new_id:03d}"  # Format UID01, UID02, ...
+
+    @staticmethod
+    def insert(tai_khoan, email, mat_khau_hash, quyen):
+        new_user_id = TaiKhoan.get_next_user_id()  # Lấy ID mới
         TaiKhoan.collection.insert_one({
+            "userID": new_user_id,
             "TaiKhoan": tai_khoan,
             "Email": email,
-            "MatKhauHash": make_password(mat_khau),  # Hash mật khẩu
-            "Quyen": quyen  # "Admin" hoặc "User"
+            "MatKhauHash": mat_khau_hash,
+            "Quyen": quyen
         })
 
-    @staticmethod
-    def get_by_tai_khoan(tai_khoan):
-        """ Lấy thông tin tài khoản theo username """
-        return TaiKhoan.collection.find_one({"TaiKhoan": tai_khoan})
-
-    @staticmethod
-    def check_password(tai_khoan, mat_khau):
-        """ Kiểm tra mật khẩu nhập vào có đúng không """
-        user = TaiKhoan.get_by_tai_khoan(tai_khoan)
-        if user:
-            return check_password(mat_khau, user["MatKhauHash"])
-        return False
-
-    @staticmethod
-    def update_mat_khau(tai_khoan, new_password):
-        """ Cập nhật mật khẩu mới (có hash) """
-        TaiKhoan.collection.update_one(
-            {"TaiKhoan": tai_khoan},
-            {"$set": {"MatKhauHash": make_password(new_password)}}
-        )
-
-    @staticmethod
-    def delete(tai_khoan):
-        """ Xóa tài khoản """
-        TaiKhoan.collection.delete_one({"TaiKhoan": tai_khoan})
 
 
 
