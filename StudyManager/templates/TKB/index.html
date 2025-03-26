@@ -5,24 +5,30 @@
 {% block content %}
 <h2 class="mb-3">Thời Khóa Biểu</h2>
 <table class="table table-bordered table-striped">
-    <thead class="table-danger">
+    <thead class="table-primary">
         <tr>
-            <th>Mã TKB</th>
-            <th>Môn Học</th>
-            <th>Thứ</th>
             <th>Thời Gian</th>
+            {% for thu in ds_thu %}
+                <th>{{ thu }}</th>
+            {% endfor %}
         </tr>
     </thead>
     <tbody>
         {% for tkb in tkbs %}
         <tr>
-            <td>{{ tkb.MaTKB }}</td>
-            <td>{{ tkb.MonHoc }}</td>
-            <td>{{ tkb.Thu }}</td>
-            <td>{{ tkb.ThoiGianHoc }}</td>
+            <td class="table-warning">{{ tkb.ThoiGianHoc }}</td>
+            {% for thu in ds_thu %}
+                <td>
+                    {% if tkb.Thu == thu %}
+                        {{ tkb.MonHoc }}
+                    {% endif %}
+                </td>
+            {% endfor %}
         </tr>
         {% empty %}
-        <tr><td colspan="4" class="text-center text-muted">Không có dữ liệu.</td></tr>
+        <tr>
+            <td colspan="{{ so_cot }}" class="text-center text-muted">Không có dữ liệu.</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>

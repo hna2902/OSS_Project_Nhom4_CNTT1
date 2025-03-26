@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from StudyManager.database import db
+import requests
 
 def index(request):
-    monhocs = list(db.QLMonHoc.find({}, {"_id": 0}))
+    response = requests.get("http://localhost:8000/api/monhoc/")
+    monhocs = response.json() if response.status_code == 200 else []
     return render(request, 'QLMH/index.html', {'monhocs': monhocs})
