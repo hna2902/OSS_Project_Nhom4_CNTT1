@@ -6,3 +6,16 @@ pip install -r requirements.txt
 Tài khoản admin
 admin
 Admin@123
+
+kiểm tra status
+git status
+
+
+lệnh cập nhật lên git
+git add .
+git commit -"nội dung" (note lại update cái gì)
+git push
+
+
+lệnh kéo project từ github về
+git pull origin main  # Hoặc `master` nếu repo dùng nhánh `master`
