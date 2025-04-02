@@ -9,26 +9,25 @@ class TaiKhoan:
     collection = db["TaiKhoan"]
 
     @staticmethod
-    def get_next_course_id():
+    def get_next_user_id():
         return get_next_id("UID", "UID")
 
     @staticmethod
-    def insert(user_id, tai_khoan, email, mat_khau, quyen, ten, sdt):
-        # Kiểm tra tài khoản hoặc email đã tồn tại chưa
-        if TaiKhoan.collection.find_one({"$or": [{"TaiKhoan": tai_khoan}, {"Email": email}]}):
-            raise ValueError("Tài khoản hoặc email đã tồn tại!")
+    def insert(user_id, tai_khoan, mat_khau, ten, sdt, quyen="User", avatar="static/img/default_avatar.png"):
+        # Kiểm tra tài khoản đã tồn tại chưa
+        if TaiKhoan.collection.find_one({"TaiKhoan": tai_khoan}):
+            raise ValueError("Tài khoản đã tồn tại!")
 
         # Hash mật khẩu trước khi lưu
         mat_khau_hash = make_password(mat_khau)
-
         TaiKhoan.collection.insert_one({
             "_id": user_id,  # ID do counter script cấp
             "TaiKhoan": tai_khoan,
-            "Email": email,
             "MatKhauHash": mat_khau_hash,
             "Quyen": quyen,
             "Ten": ten,
-            "SDT": sdt
+            "SDT": sdt,
+            "Avatar": avatar  # Avatar mặc định
         })
 
     @staticmethod
@@ -45,16 +44,18 @@ class TaiKhoan:
         return None  # Sai tài khoản hoặc mật khẩu
 
     @staticmethod
-    def update_user_info(user_id, ten=None, sdt=None):
+    def update_user_info(user_id, ten=None, sdt=None, avatar=None):
         # Cập nhật thông tin cá nhân (tên, số điện thoại)
         update_data = {}
         if ten:
             update_data["Ten"] = ten
         if sdt:
             update_data["SDT"] = sdt
-
+        if avatar:
+            update_data["Avatar"] = avatar
         if update_data:
             TaiKhoan.collection.update_one({"_id": user_id}, {"$set": update_data})
+
 
 
 class QLMonHoc:
@@ -62,63 +63,18 @@ class QLMonHoc:
 
     @staticmethod
     def get_next_course_id():
+        """Lấy ID mới cho môn học"""
         return get_next_id("monhocID", "MH")
 
     @staticmethod
-    def insert(user_id, ten_mon, so_tin_chi, thoi_gian_bat_dau, thoi_gian_ket_thuc, giang_vien):
-        # Kiểm tra tên môn học đã tồn tại chưa (cùng user_id)
-        if QLMonHoc.collection.find_one({"MaNguoiDung": user_id, "TenMon": ten_mon}):
-            raise ValueError(f"Môn học '{ten_mon}' đã tồn tại!")
-
-        # Kiểm tra thời gian hợp lệ
-        if thoi_gian_bat_dau >= thoi_gian_ket_thuc:
-            raise ValueError("Thời gian bắt đầu phải trước thời gian kết thúc!")
-
-        # Tạo ID mới
-        new_course_id = QLMonHoc.get_next_course_id()
-
-        QLMonHoc.collection.insert_one({
-            "_id": new_course_id,
-            "MaNguoiDung": user_id,
-            "TenMon": ten_mon,
-            "SoTinChi": so_tin_chi,
-            "ThoiGianBatDau": thoi_gian_bat_dau,
-            "ThoiGianKetThuc": thoi_gian_ket_thuc,
-            "GiangVien": giang_vien
-        })
-
-    @staticmethod
     def get_by_id(course_id):
-        # Tìm môn học theo ID
+        """Lấy môn học theo ID"""
         return QLMonHoc.collection.find_one({"_id": course_id})
 
     @staticmethod
     def get_all_courses(user_id):
-        # Lấy danh sách môn học của người dùng (chỉ lấy _id và tên môn)
+        """Lấy danh sách môn học của người dùng"""
         return list(QLMonHoc.collection.find({"MaNguoiDung": user_id}, {"_id": 1, "TenMon": 1}))
-
-    @staticmethod
-    def update(course_id, ten_mon=None, so_tin_chi=None, thoi_gian_bat_dau=None, thoi_gian_ket_thuc=None, giang_vien=None):
-        update_data = {}
-        if ten_mon:
-            update_data["TenMon"] = ten_mon
-        if so_tin_chi is not None:
-            update_data["SoTinChi"] = so_tin_chi
-        if thoi_gian_bat_dau and thoi_gian_ket_thuc:
-            if thoi_gian_bat_dau >= thoi_gian_ket_thuc:
-                raise ValueError("Thời gian bắt đầu phải trước thời gian kết thúc!")
-            update_data["ThoiGianBatDau"] = thoi_gian_bat_dau
-            update_data["ThoiGianKetThuc"] = thoi_gian_ket_thuc
-        if giang_vien:
-            update_data["GiangVien"] = giang_vien
-
-        if update_data:
-            QLMonHoc.collection.update_one({"_id": course_id}, {"$set": update_data})
-
-    @staticmethod
-    def delete(course_id):
-        # Xóa môn học theo ID
-        QLMonHoc.collection.delete_one({"_id": course_id})
 
 
 class QLKetQuaHoc:
@@ -257,7 +213,7 @@ class ThoiKhoaBieu:
 
     @staticmethod
     def insert(user_id, ma_mon, thu, thoi_gian_hoc):
-        """Thêm thời khóa biểu mới"""
+        #Thêm thời khóa biểu mới
         new_tkb_id = ThoiKhoaBieu.get_next_tkb_id()  # Tạo ID mới
 
         # Kiểm tra thứ hợp lệ (2 - 8, tương ứng Thứ Hai - Chủ Nhật)
@@ -278,12 +234,12 @@ class ThoiKhoaBieu:
 
     @staticmethod
     def get_by_user(user_id):
-        """Lấy danh sách thời khóa biểu của người dùng"""
+        #Lấy danh sách thời khóa biểu của người dùng
         return list(ThoiKhoaBieu.collection.find({"MaNguoiDung": user_id}))
 
     @staticmethod
     def update(tkb_id, ma_mon=None, thu=None, thoi_gian_hoc=None):
-        """Cập nhật thời khóa biểu"""
+        #Cập nhật thời khóa biểu
         update_data = {}
 
         if ma_mon is not None:
@@ -304,7 +260,7 @@ class ThoiKhoaBieu:
 
     @staticmethod
     def delete(tkb_id):
-        """Xóa thời khóa biểu"""
+        #Xóa thời khóa biểu
         ThoiKhoaBieu.collection.delete_one({"_id": tkb_id})
 
 

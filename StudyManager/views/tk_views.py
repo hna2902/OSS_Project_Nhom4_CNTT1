@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from StudyManager.database import db
-import requests
+
 
 def index(request):
-    response = requests.get("http://localhost:8000/api/taikhoan/")
-    taikhoans = response.json() if response.status_code == 200 else []
+    # Truy vấn danh sách tài khoản từ MongoDB
+    taikhoans = list(db.TaiKhoan.find({}, {"_id": 0}))  # Không lấy trường "_id"
     return render(request, 'TK/index.html', {'taikhoans': taikhoans})
