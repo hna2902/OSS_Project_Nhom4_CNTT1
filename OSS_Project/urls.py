@@ -10,7 +10,7 @@ from StudyManager.views.tkb_views import index as thoikhoabieu_index
 from StudyManager.views.ttnd_views import index as thongtinnguoidung_index
 from StudyManager.views.qltc_views import index as tinchi_index
 from StudyManager.views.vcl_views import index as vieccanlam_index
-from StudyManager.views.authentication_views import register
+from StudyManager.views.authentication_views import login_view, register
 
 # Import API ViewSet
 from StudyManager.views.authentication_api_views import TaiKhoanViewSet
@@ -47,6 +47,7 @@ urlpatterns = [
     path('tinchi/', tinchi_index, name='tinchi'),
     path('vieccanlam/', vieccanlam_index, name='vieccanlam'),
     path('register/', register, name='register'),
+    path('login/', login_view, name='login'),
 
     # --- Django Admin ---
     path('admin/', admin.site.urls),

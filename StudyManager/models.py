@@ -20,7 +20,7 @@ class TaiKhoan:
 
         # Hash mật khẩu trước khi lưu
         mat_khau_hash = make_password(mat_khau)
-        TaiKhoan.collection.insert_one({
+        result = TaiKhoan.collection.insert_one({
             "_id": user_id,  # ID do counter script cấp
             "TaiKhoan": tai_khoan,
             "MatKhauHash": mat_khau_hash,
@@ -30,10 +30,22 @@ class TaiKhoan:
             "Avatar": avatar  # Avatar mặc định
         })
 
+        # Kiểm tra nếu result được trả về từ insert_one
+        if result:
+            print("Tài khoản đã được tạo, ID:", result.inserted_id)
+        else:
+            print("Có lỗi trong quá trình thêm tài khoản.")
+
+
     @staticmethod
     def get_user_info(user_id):
         # Lấy thông tin người dùng, ẩn mật khẩu
         return TaiKhoan.collection.find_one({"_id": user_id}, {"MatKhauHash": 0})
+    
+    @staticmethod
+    def get_user_by_tai_khoan(tai_khoan):
+        # Truy vấn tài khoản từ MongoDB
+        return db.TaiKhoan.find_one({"TaiKhoan": tai_khoan})
 
     @staticmethod
     def authenticate(tai_khoan, mat_khau):
