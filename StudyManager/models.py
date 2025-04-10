@@ -13,7 +13,7 @@ class TaiKhoan:
         return get_next_id("UID", "UID")
 
     @staticmethod
-    def insert(user_id, tai_khoan, mat_khau, ten, sdt, quyen="User", avatar="static/img/default_avatar.png"):
+    def insert(user_id, tai_khoan, mat_khau, ten, sdt, quyen="User", avatar="/static/img/default_avatar.png"):
         # Kiểm tra tài khoản đã tồn tại chưa
         if TaiKhoan.collection.find_one({"TaiKhoan": tai_khoan}):
             raise ValueError("Tài khoản đã tồn tại!")
