@@ -60,3 +60,10 @@ def login_view(request):
 
     return render(request, 'Authentication/login.html')
 
+def logout_view(request):
+    try:
+        del request.session['user_id']
+    except KeyError:
+        pass
+    messages.success(request, 'Bạn đã đăng xuất thành công.')
+    return redirect('login')  # hoặc redirect('/') nếu muốn về trang chủ
