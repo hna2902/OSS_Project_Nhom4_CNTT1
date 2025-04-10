@@ -21,7 +21,7 @@ from StudyManager.views.ttnd_api_views import ThongTinNguoiDungViewSet
 from StudyManager.views.tkb_api_views import ThoiKhoaBieuViewSet
 from StudyManager.views.qltc_api_views import QLTinChiViewSet
 from StudyManager.views.tk_api_views import TaiKhoanDisplayViewSet
-
+from StudyManager.views.qlmh_views import add_subject
 # API Views đơn lẻ
 from StudyManager.views.home_views import home
 
@@ -41,6 +41,7 @@ urlpatterns = [
     path('', home, name='trangchu'),
     path('ketqua/', ketqua_index, name='ketqua'),
     path('monhoc/', monhoc_index, name='monhoc'),
+    path('monhoc/them/', add_subject, name='add_subject'),
     path('taikhoan/', taikhoan_index, name='taikhoan'),
     path('thoikhoabieu/', thoikhoabieu_index, name='thoikhoabieu'),
     path('thongtinnguoidung/', thongtinnguoidung_index, name='thongtinnguoidung'),

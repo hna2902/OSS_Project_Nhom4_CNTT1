@@ -4,6 +4,8 @@ body {
     background-color: #f4f6f9;
     margin: 0;
     padding: 0;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 }
 
 /* Navbar */
@@ -17,6 +19,7 @@ body {
     font-weight: bold;
     font-size: 1.5rem;
     color: #fff;
+    text-align: match-parent;
 }
 
 .navbar-nav .nav-link {
@@ -42,6 +45,7 @@ body {
     left: 0;
     width: 250px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Tùy chọn, giữ lại nếu muốn hỗ trợ iOS cũ */
 }
 
 #sidebar .nav-link {
@@ -49,6 +53,7 @@ body {
     font-size: 1rem;
     padding: 10px 20px;
     transition: background-color 0.3s ease-in-out;
+    text-align: match-parent;
 }
 
 #sidebar .nav-link:hover {
@@ -114,5 +119,3 @@ table tbody tr:hover {
         padding: 10px;
     }
 }
- 
-

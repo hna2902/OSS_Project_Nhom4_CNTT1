@@ -44,3 +44,30 @@
 #     path('api/data/<str:collection_name>/get/', get_data_api, name='get_data_api'),
 #     path('api/data/<str:collection_name>/create/', create_data_api, name='create_data_api'),
 # ]
+
+from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from StudyManager.database import db
+
+import requests  # để gửi POST request
+
+@csrf_exempt
+def add_subject(request):
+    if request.method == 'POST':
+        user_id = request.COOKIES.get("user_id")
+        payload = {
+            "TenMon": request.POST.get("TenMon"),
+            "GiangVien": request.POST.get("GiangVien"),
+            "ThoiGianBatDau": request.POST.get("ThoiGianBatDau"),
+            "ThoiGianKetThuc": request.POST.get("ThoiGianKetThuc"),
+            "SoTinChi": request.POST.get("SoTinChi"),
+            "UserID": user_id
+        }
+
+        requests.post("http://localhost:8000/api/monhoc/", data=payload)
+        return HttpResponseRedirect(reverse('monhoc_index'))  # hoặc reload trang
+
+    return HttpResponse("Phương thức không hợp lệ", status=405)
+
