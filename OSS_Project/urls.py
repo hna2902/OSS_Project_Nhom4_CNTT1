@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+
 # Import từng view theo đúng file chứa nó
 from StudyManager.views.qlkq_views import index as ketqua_index
 from StudyManager.views.qlmh_views import index as monhoc_index
@@ -11,6 +12,7 @@ from StudyManager.views.ttnd_views import index as thongtinnguoidung_index
 from StudyManager.views.qltc_views import index as tinchi_index
 from StudyManager.views.vcl_views import index as vieccanlam_index
 from StudyManager.views.authentication_views import login_view, register, logout_view
+from StudyManager.views import vcl_views
 
 # Import API ViewSet
 from StudyManager.views.authentication_api_views import TaiKhoanViewSet
@@ -47,6 +49,7 @@ urlpatterns = [
     path('thongtinnguoidung/', thongtinnguoidung_index, name='thongtinnguoidung'),
     path('tinchi/', tinchi_index, name='tinchi'),
     path('vieccanlam/', vieccanlam_index, name='vieccanlam'),
+    path('vieccanlam/add/', vcl_views.add_viec, name='add_viec'),
     path('register/', register, name='register'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

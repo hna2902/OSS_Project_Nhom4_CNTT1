@@ -36,7 +36,6 @@ class QLMonHocViewSet(viewsets.ViewSet):
 
         db.QLMonHoc.insert_one({
             "_id": ma_mon,  # 👈 thêm dòng này để đồng nhất kiểu _id
-            "MaMonHoc": ma_mon,
             "TenMon": ten_mon,
             "GiangVien": giang_vien,
             "ThoiGianBatDau": thoi_gian_bat_dau,

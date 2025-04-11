@@ -2,30 +2,104 @@
 
 {% block title %}Việc Cần Làm{% endblock %}
 
+{% block header %}Danh sách việc cần làm{% endblock %}
+
 {% block content %}
-<h2 class="mb-3">Danh sách Việc Cần Làm</h2>
-<table class="table table-bordered table-striped">
-    <thead class="table-secondary">
-        <tr>
-            <th>Mã VCL</th>
-            <th>Nội Dung</th>
-            <th>Ghi Chú</th>
-            <th>Thời Hạn</th>
-            <th>Môn Học</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for vcl in vieccanlams %}
-        <tr>
-            <td>{{ vcl.MaVCL }}</td>
-            <td>{{ vcl.NhacNho }}</td>
-            <td>{{ vcl.GhiChu }}</td>
-            <td>{{ vcl.ThoiHan }}</td>
-            <td>{{ vcl.TenMon }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" class="text-center text-muted">Không có dữ liệu.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>Nhắc Nhở</th>
+                <th>Ghi Chú</th>
+                <th>Thời Hạn</th>
+                <th>Mã Môn</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for viec in vieccanlams %}
+                <tr>
+                    <td>{{ viec.NhacNho }}</td>
+                    <td>{{ viec.GhiChu }}</td>
+                    <td>{{ viec.ThoiHan }}</td>
+                    <td>{{ viec.MaMon }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- Nút mở popup -->
+<!-- Nút mở modal -->
+<button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#themViecModal">
+    + Thêm Việc
+  </button>
+  
+
+<!-- Popup -->
+<!-- Modal -->
+<div class="modal fade" id="themViecModal" tabindex="-1" aria-labelledby="themViecLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+      
+        <!-- Header -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="themViecLabel">Thêm Việc Cần Làm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        
+        <!-- Body với form -->
+        <div class="modal-body">
+          <form method="post" action="{% url 'add_viec' %}">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              <label for="nhacNho" class="form-label">Nhắc nhở</label>
+              <input type="text" class="form-control" name="NhacNho" id="nhacNho" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="ghiChu" class="form-label">Ghi chú</label>
+              <textarea class="form-control" name="GhiChu" id="ghiChu" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label for="thoiHan" class="form-label">Thời hạn</label>
+              <input type="date" class="form-control" name="ThoiHan" id="thoiHan" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="maMon" class="form-label">Mã môn học</label>
+              <select class="form-select" name="MaMon" id="maMon" required>
+                <option value="" disabled selected>Chọn môn học</option>
+                {% for mon in monhocs %}
+                    <option value="{{ mon.MaMon }}">{{ mon.TenMon }}</option>
+                {% endfor %}
+            </select>
+            
+            </div>
+            
+            <!-- Footer của form -->
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Thêm</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            </div>
+          </form>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+  
+
+
+{% endblock %}
+
+{% block script %}
+<script>
+    function openPopup() {
+        document.getElementById("popup").style.display = "flex";
+    }
+    function closePopup() {
+        document.getElementById("popup").style.display = "none";
+    }
+</script>
+
 {% endblock %}
