@@ -24,6 +24,7 @@ from StudyManager.views.tkb_api_views import ThoiKhoaBieuViewSet
 from StudyManager.views.qltc_api_views import QLTinChiViewSet
 from StudyManager.views.tk_api_views import TaiKhoanDisplayViewSet
 from StudyManager.views.qlmh_views import add_subject
+from StudyManager.views.tkb_views import index, add_schedule, delete_schedule,update_schedule, delete_schedule_subject
 # API Views đơn lẻ
 from StudyManager.views.home_views import home
 
@@ -46,10 +47,15 @@ urlpatterns = [
     path('monhoc/them/', add_subject, name='add_subject'),
     path('taikhoan/', taikhoan_index, name='taikhoan'),
     path('thoikhoabieu/', thoikhoabieu_index, name='thoikhoabieu'),
+     path('thoikhoabieu/them/', add_schedule, name='add_schedule'),
+    path('update_schedule/<pk>/', update_schedule, name='update_schedule'),  # Đảm bảo đã thêm URL cho update_schedule
+    path('delete_schedule/<pk>/',delete_schedule, name='delete_schedule'),
+    path('delete_schedule_subject/<pk>/', delete_schedule_subject, name='delete_schedule_subject'),
+
+
     path('thongtinnguoidung/', thongtinnguoidung_index, name='thongtinnguoidung'),
     path('tinchi/', tinchi_index, name='tinchi'),
     path('vieccanlam/', vieccanlam_index, name='vieccanlam'),
-    path('vieccanlam/add/', vcl_views.add_viec, name='add_viec'),
     path('register/', register, name='register'),
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

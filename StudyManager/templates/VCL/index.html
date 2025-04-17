@@ -1,105 +1,187 @@
 {% extends 'layout.html' %}
 
 {% block title %}Việc Cần Làm{% endblock %}
-
 {% block header %}Danh sách việc cần làm{% endblock %}
 
 {% block content %}
-    <table class="table table-bordered">
-        <thead class="table-light">
-            <tr>
-                <th>Nhắc Nhở</th>
-                <th>Ghi Chú</th>
-                <th>Thời Hạn</th>
-                <th>Mã Môn</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for viec in vieccanlams %}
-                <tr>
-                    <td>{{ viec.NhacNho }}</td>
-                    <td>{{ viec.GhiChu }}</td>
-                    <td>{{ viec.ThoiHan }}</td>
-                    <td>{{ viec.MaMon }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-<!-- Nút mở popup -->
-<!-- Nút mở modal -->
-<button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#themViecModal">
-    + Thêm Việc
-  </button>
-  
-
-<!-- Popup -->
-<!-- Modal -->
-<div class="modal fade" id="themViecModal" tabindex="-1" aria-labelledby="themViecLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-      
-        <!-- Header -->
-        <div class="modal-header">
-          <h5 class="modal-title" id="themViecLabel">Thêm Việc Cần Làm</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-        </div>
-        
-        <!-- Body với form -->
-        <div class="modal-body">
-          <form method="post" action="{% url 'add_viec' %}">
-            {% csrf_token %}
-            
-            <div class="mb-3">
-              <label for="nhacNho" class="form-label">Nhắc nhở</label>
-              <input type="text" class="form-control" name="NhacNho" id="nhacNho" required>
-            </div>
-            
-            <div class="mb-3">
-              <label for="ghiChu" class="form-label">Ghi chú</label>
-              <textarea class="form-control" name="GhiChu" id="ghiChu" required></textarea>
-            </div>
-            
-            <div class="mb-3">
-              <label for="thoiHan" class="form-label">Thời hạn</label>
-              <input type="date" class="form-control" name="ThoiHan" id="thoiHan" required>
-            </div>
-            
-            <div class="mb-3">
-              <label for="maMon" class="form-label">Mã môn học</label>
-              <select class="form-select" name="MaMon" id="maMon" required>
-                <option value="" disabled selected>Chọn môn học</option>
+<!-- Form lọc -->
+<div class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label for="tenMonFilter" class="form-label">Tên môn</label>
+            <select class="form-select" id="tenMonFilter">
+                <option value="" selected>Tất cả</option>
                 {% for mon in monhocs %}
-                    <option value="{{ mon.MaMon }}">{{ mon.TenMon }}</option>
+                    <option value="{{ mon.TenMon }}">{{ mon.TenMon }}</option>
                 {% endfor %}
             </select>
-            
-            </div>
-            
-            <!-- Footer của form -->
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Thêm</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-            </div>
-          </form>
         </div>
-  
-      </div>
+        <div class="col-md-4">
+            <label for="thoiHanFilter" class="form-label">Thời hạn</label>
+            <input type="date" class="form-control" id="thoiHanFilter">
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="button" class="btn btn-primary me-2" onclick="filterTable()">Lọc</button>
+            <button type="button" class="btn btn-secondary" onclick="resetFilter()">Xóa bộ lọc</button>
+        </div>
     </div>
-  </div>
-  
+</div>
 
+<table class="table table-bordered" id="viecTable">
+    <thead class="table-light">
+        <tr>
+            <th>Tên môn</th>
+            <th>Nhắc Nhở</th>
+            <th>Ghi Chú</th>
+            <th>Thời Hạn</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for viec in vieccanlams %}
+            <tr data-tenmon="{{ viec.TenMon }}" data-thoihan="{{ viec.ThoiHan }}">
+                <td>{{ viec.TenMon }}</td>
+                <td>{{ viec.NhacNho }}</td>
+                <td>{{ viec.GhiChu }}</td>
+                <td>{{ viec.ThoiHan }}</td>
+                <td>
+                    <!-- Nút Sửa -->
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#suaViecModal{{ viec.MaViec }}">
+                        Sửa
+                    </button>
+                    <!-- Nút Xóa -->
+                    <form method="post" action="" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="MaViec" value="{{ viec.MaViec }}">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa việc này không?')">Xóa</button>
+                    </form>
+                </td>
+            </tr>
 
-{% endblock %}
+            <!-- Modal Sửa -->
+            <div class="modal fade" id="suaViecModal{{ viec.MaViec }}" tabindex="-1" aria-labelledby="suaViecLabel{{ viec.MaViec }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="suaViecLabel{{ viec.MaViec }}">Sửa Việc Cần Làm</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="post" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update">
+                                <input type="hidden" name="MaViec" value="{{ viec.MaViec }}">
+                                <div class="mb-3">
+                                    <label for="nhacNho{{ viec.MaViec }}" class="form-label">Nhắc nhở</label>
+                                    <input type="text" class="form-control" name="NhacNho" id="nhacNho{{ viec.MaViec }}" value="{{ viec.NhacNho }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="ghiChu{{ viec.MaViec }}" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" name="GhiChu" id="ghiChu{{ viec.MaViec }}" required>{{ viec.GhiChu }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="thoiHan{{ viec.MaViec }}" class="form-label">Thời hạn</label>
+                                    <input type="date" class="form-control" name="ThoiHan" id="thoiHan{{ viec.MaViec }}" value="{{ viec.ThoiHan }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="monHocId{{ viec.MaViec }}" class="form-label">Môn học</label>
+                                    <select class="form-select" name="MaMonHoc" id="monHocId{{ viec.MaViec }}" required>
+                                        <option value="" disabled {% if not viec.MaMonHoc %}selected{% endif %}>Chọn môn học</option>
+                                        {% for mon in monhocs %}
+                                            <option value="{{ mon.MaMonHoc }}" {% if mon.MaMonHoc == viec.MaMonHoc %}selected{% endif %}>{{ mon.TenMon }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Lưu</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </tbody>
+</table>
 
-{% block script %}
+<!-- Nút mở modal Thêm -->
+<button type="button" class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#themViecModal">
+    + Thêm Việc
+</button>
+
+<!-- Modal Thêm -->
+<div class="modal fade" id="themViecModal" tabindex="-1" aria-labelledby="themViecLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="themViecLabel">Thêm Việc Cần Làm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label for="nhacNho" class="form-label">Nhắc nhở</label>
+                        <input type="text" class="form-control" name="NhacNho" id="nhacNho" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ghiChu" class="form-label">Ghi chú</label>
+                        <textarea class="form-control" name="GhiChu" id="ghiChu" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="thoiHan" class="form-label">Thời hạn</label>
+                        <input type="date" class="form-control" name="ThoiHan" id="thoiHan" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="monHocId" class="form-label">Môn học</label>
+                        <select class="form-select" name="MaMonHoc" id="monHocId" required>
+                            <option value="" disabled selected>Chọn môn học</option>
+                            {% for mon in monhocs %}
+                                <option value="{{ mon.MaMonHoc }}">{{ mon.TenMon }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Thêm</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript để lọc bảng -->
 <script>
-    function openPopup() {
-        document.getElementById("popup").style.display = "flex";
-    }
-    function closePopup() {
-        document.getElementById("popup").style.display = "none";
-    }
-</script>
+function filterTable() {
+    const tenMonFilter = document.getElementById("tenMonFilter").value.toLowerCase();
+    const thoiHanFilter = document.getElementById("thoiHanFilter").value;
+    const rows = document.querySelectorAll("#viecTable tbody tr");
 
+    rows.forEach(row => {
+        const tenMon = row.getAttribute("data-tenmon") ? row.getAttribute("data-tenmon").toLowerCase() : "";
+        const thoiHan = row.getAttribute("data-thoihan") || "";
+
+        // Kiểm tra điều kiện lọc
+        const tenMonMatch = tenMonFilter === "" || tenMon === tenMonFilter; // So sánh chính xác vì dropdown
+        const thoiHanMatch = thoiHanFilter === "" || thoiHan === thoiHanFilter;
+
+        // Hiển thị hoặc ẩn hàng
+        if (tenMonMatch && thoiHanMatch) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+
+function resetFilter() {
+    document.getElementById("tenMonFilter").value = "";
+    document.getElementById("thoiHanFilter").value = "";
+    filterTable(); // Gọi lại hàm lọc để hiển thị tất cả hàng
+}
+</script>
 {% endblock %}
