@@ -7,51 +7,117 @@
 <div class="container mt-4">
     <h2>Thông tin của bạn</h2>
     <div class="card p-4 shadow-sm">
-        <div class="row">
-            <!-- Avatar -->
-            <div class="col-md-3 text-center">
-                <img src="{% if user.Avatar %}{{ user.Avatar }}{% else %}{% static 'img/default_avatar.png' %}{% endif %}" alt="Avatar"
-                class="rounded-circle" width="100">           
+        <form id="user-info-form" method="post">
+            {% csrf_token %}
+            {# 1. Thêm input ẩn để lấy user_id từ session #}
+            <input type="hidden" id="user-id" value="{{ request.session.user_id }}">
+
+            <div class="row">
+                <!-- Avatar -->
+                <div class="col-md-3 text-center">
+                    <img id="avatar-img"
+                         src="{% if user.Avatar %}{{ user.Avatar }}{% else %}{% static 'img/default_avatar.png' %}{% endif %}"
+                         alt="Avatar"
+                         class="rounded-circle"
+                         width="100">
+                </div>
+
+                <!-- Thông tin cá nhân -->
+                <div class="col-md-9">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Tên của bạn</label>
+                            <input type="text" class="form-control" name="Ten" value="{{ user.Ten }}" disabled>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" name="SDT" value="{{ user.SDT }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Tài khoản</label>
+                            <input type="text" class="form-control" value="{{ user.TaiKhoan }}" disabled>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="Email" value="{{ user.Email }}" disabled>
+                        </div>
+                    </div>
+
+                    <!-- Các nút thao tác -->
+                    <div class="text-center mt-4" id="action-buttons">
+                        <button type="button" class="btn btn-danger me-2" id="change-password-btn">Thay đổi mật khẩu</button>
+                        <button type="button" class="btn btn-primary" id="edit-info-btn">Thay đổi thông tin</button>
+                    </div>
+                </div>
             </div>
-
-            <!-- Thông tin cá nhân -->
-            <div class="col-md-9">
-                <div class="row mb-3">
-                    <div class="col-sm-6">
-                        <label class="form-label">Tên của bạn</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" value="{{ user.Ten }}" disabled>
-                            <a href="#" class="btn btn-primary">Thay đổi</a>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="form-label">Số điện thoại</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" value="{{ user.SDT }}" disabled>
-                            <a href="#" class="btn btn-primary">Thay đổi</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-sm-6">
-                        <label class="form-label">Tài khoản</label>
-                        <input type="text" class="form-control" value="{{ user.TaiKhoan }}" disabled>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="form-label">Email</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" value="{{ user.Email }}" disabled>
-                            <a href="#" class="btn btn-primary">Thay đổi</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center">
-                    <a href="#" class="btn btn-danger">Thay đổi mật khẩu</a>
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('user-info-form');
+    const editBtn = document.getElementById('edit-info-btn');
+    const passwordBtn = document.getElementById('change-password-btn');
+    const userId  = document.getElementById('user-id').value;      // <-- lấy userId từ input ẩn
+    let isEditMode = false;
+
+    editBtn.addEventListener('click', function () {
+        if (!isEditMode) {
+            // Bật chế độ chỉnh sửa
+            form.querySelectorAll('input[name="Ten"], input[name="SDT"], input[name="Email"]')
+                .forEach(i => i.disabled = false);
+
+            editBtn.textContent     = "Lưu thông tin thay đổi";
+            passwordBtn.textContent = "Quay lại";
+            isEditMode = true;
+        } else {
+            // Chuẩn bị payload
+            const data = {
+                Ten:   form.querySelector('input[name="Ten"]').value,
+                SDT:   form.querySelector('input[name="SDT"]').value,
+                Email: form.querySelector('input[name="Email"]').value
+            };
+
+            // 2. Gọi đúng endpoint update_user_info
+            fetch(`/api/thongtinnguoidung/${userId}/update_user_info/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(data),
+            })
+            .then(r => r.json())
+            .then(resp => {
+                console.log("Cập nhật thành công:", resp);
+                // rollback UI
+                form.querySelectorAll('input[name="Ten"], input[name="SDT"], input[name="Email"]')
+                    .forEach(i => i.disabled = true);
+                editBtn.textContent     = "Thay đổi thông tin";
+                passwordBtn.textContent = "Thay đổi mật khẩu";
+                isEditMode = false;
+            })
+            .catch(err => console.error("Lỗi khi cập nhật:", err));
+        }
+    });
+
+    passwordBtn.addEventListener('click', function () {
+        if (isEditMode) {
+            // Hủy chỉnh sửa
+            form.reset();
+            form.querySelectorAll('input[name="Ten"], input[name="SDT"], input[name="Email"]')
+                .forEach(i => i.disabled = true);
+            editBtn.textContent     = "Thay đổi thông tin";
+            passwordBtn.textContent = "Thay đổi mật khẩu";
+            isEditMode = false;
+        } else {
+            alert("Chức năng đổi mật khẩu sẽ được thêm sau!");
+        }
+    });
+});
+</script>
 {% endblock %}

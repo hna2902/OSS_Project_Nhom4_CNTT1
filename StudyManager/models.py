@@ -13,7 +13,7 @@ class TaiKhoan:
         return get_next_id("UID", "UID")
 
     @staticmethod
-    def insert(user_id, tai_khoan, mat_khau, ten, sdt, quyen="User", avatar="/static/img/default_avatar.png"):
+    def insert(user_id, tai_khoan, mat_khau, ten, sdt, email, quyen="User", avatar="/static/img/default_avatar.png"):
         # Kiểm tra tài khoản đã tồn tại chưa
         if TaiKhoan.collection.find_one({"TaiKhoan": tai_khoan}):
             raise ValueError("Tài khoản đã tồn tại!")
@@ -27,6 +27,7 @@ class TaiKhoan:
             "Quyen": quyen,
             "Ten": ten,
             "SDT": sdt,
+            "Email": email,
             "Avatar": avatar  # Avatar mặc định
         })
 
@@ -56,13 +57,15 @@ class TaiKhoan:
         return None  # Sai tài khoản hoặc mật khẩu
 
     @staticmethod
-    def update_user_info(user_id, ten=None, sdt=None, avatar=None):
+    def update_user_info(user_id, ten=None, sdt=None, email=None, avatar=None):
         # Cập nhật thông tin cá nhân (tên, số điện thoại)
         update_data = {}
         if ten:
             update_data["Ten"] = ten
         if sdt:
             update_data["SDT"] = sdt
+        if email:
+            update_data["Email"] = email
         if avatar:
             update_data["Avatar"] = avatar
         if update_data:
