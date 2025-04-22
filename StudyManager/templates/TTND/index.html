@@ -15,13 +15,20 @@
             <div class="row">
                 <!-- Avatar -->
                 <div class="col-md-3 text-center">
-                    <img id="avatar-img"
-                         src="{% if user.Avatar %}{{ user.Avatar }}{% else %}{% static 'img/default_avatar.png' %}{% endif %}"
-                         alt="Avatar"
-                         class="rounded-circle"
-                         width="100">
+                    <div class="d-flex flex-column align-items-center">
+                        <img id="avatar-img"
+                             src="{% if user.Avatar %}{{ user.Avatar }}{% else %}{% static 'img/default_avatar.png' %}{% endif %}"
+                             alt="Avatar"
+                             class="rounded-circle"
+                             width="100">
+                             
+                        <input type="file" id="avatar-input" accept="image/*" class="form-control mt-2" style="display: none;">
+                        
+                        <button type="button" id="change-avatar-btn" class="btn btn-secondary btn-sm mt-2">Đổi ảnh</button>
+                    </div>
                 </div>
-
+                
+                
                 <!-- Thông tin cá nhân -->
                 <div class="col-md-9">
                     <div class="row mb-3">
@@ -62,6 +69,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('user-info-form');
     const editBtn = document.getElementById('edit-info-btn');
     const passwordBtn = document.getElementById('change-password-btn');
+    const avatarInput = document.getElementById('avatar-input');
+    const avatarImg = document.getElementById('avatar-img');
+    const changeAvatarBtn = document.getElementById('change-avatar-btn');
     const userId  = document.getElementById('user-id').value;      // <-- lấy userId từ input ẩn
     let isEditMode = false;
 
@@ -118,6 +128,32 @@ document.addEventListener('DOMContentLoaded', function () {
             alert("Chức năng đổi mật khẩu sẽ được thêm sau!");
         }
     });
+    changeAvatarBtn.addEventListener('click', () => {
+        avatarInput.click();  // Mở hộp chọn file
+    });
+    
+    avatarInput.addEventListener('change', () => {
+        const file = avatarInput.files[0];
+        if (!file) return;
+    
+        const formData = new FormData();
+        formData.append('avatar', file);  // Tên phải trùng với `request.FILES['avatar']` bên views
+    
+        fetch(`/api/thongtinnguoidung/${userId}/upload_avatar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("Upload thành công:", data);
+            avatarImg.src = data.avatar_url || URL.createObjectURL(file); // Cập nhật lại ảnh hiển thị
+        })
+        .catch(err => console.error("Lỗi khi upload avatar:", err));
+    });
+    
 });
 </script>
 {% endblock %}
