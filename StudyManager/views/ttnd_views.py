@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import requests
 
 def index(request):
@@ -30,3 +30,10 @@ def index(request):
         return render(request, 'TTND/index.html', {'user': user, 'message': success_message, 'user_id': user_id})
 
     return render(request, 'TTND/index.html', {'user': user, 'user_id': user_id})
+
+def change_password_view(request):
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect('login_url') # Hoặc trang đăng nhập của bạn
+
+    return render(request, 'TTND/change_password.html', {'user_id': user_id})

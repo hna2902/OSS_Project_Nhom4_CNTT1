@@ -23,7 +23,7 @@ def register(request):
 
         try:
             # Kiểm tra tài khoản đã tồn tại
-            TaiKhoan.insert(user_id, tai_khoan, mat_khau, ten, sdt="")
+            TaiKhoan.insert(user_id, tai_khoan, mat_khau, ten, sdt="", email="")
             print("Tài khoản đã được tạo thành công.")
         except ValueError as e:
             # Nếu tài khoản đã tồn tại
