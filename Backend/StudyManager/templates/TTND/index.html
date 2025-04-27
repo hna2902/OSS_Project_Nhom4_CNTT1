@@ -1,0 +1,149 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}Thông Tin Người Dùng{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Thông tin của bạn</h2>
+    <div class="card p-4 shadow-sm">
+        <form id="user-info-form" method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" id="user-id" value="{{ request.session.user_id }}">
+
+            <div class="row">
+                <div class="col-md-3 text-center">
+                    <div class="d-flex flex-column align-items-center">
+                        <img id="avatar-img"
+                             src="{% if user.Avatar %}{{ user.Avatar }}{% else %}{% static 'img/default_avatar.png' %}{% endif %}"
+                             alt="Avatar"
+                             class="rounded-circle"
+                             width="100">
+
+                        <input type="file" id="avatar-input" accept="image/*" class="form-control mt-2" style="display: none;">
+
+                        <button type="button" id="change-avatar-btn" class="btn btn-secondary btn-sm mt-2">Đổi ảnh</button>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Tên của bạn</label>
+                            <input type="text" class="form-control" name="Ten" value="{{ user.Ten }}" disabled>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" name="SDT" value="{{ user.SDT }}"
+                                   pattern="^0\d{9}$"
+                                   title="Số điện thoại phải có 10 chữ số và bắt đầu bằng số 0"
+                                   placeholder="0328746222"
+                                   disabled>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">Tài khoản</label>
+                            <input type="text" class="form-control" value="{{ user.TaiKhoan }}" disabled>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="Email" value="{{ user.Email }}"
+                                   pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"
+                                   title="Email không hợp lệ, ví dụ: example@gmail.com"
+                                   placeholder="example@gmail.com"
+                                   disabled>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4" id="action-buttons">
+                        <a href="{% url 'change_password' %}" class="btn btn-danger me-2" id="change-password-btn">Thay đổi mật khẩu</a>
+                        <button type="button" class="btn btn-primary" id="edit-info-btn">Thay đổi thông tin</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('user-info-form');
+    const editBtn = document.getElementById('edit-info-btn');
+    const passwordBtn = document.getElementById('change-password-btn');
+    const avatarInput = document.getElementById('avatar-input');
+    const avatarImg = document.getElementById('avatar-img');
+    const changeAvatarBtn = document.getElementById('change-avatar-btn');
+    const userId = document.getElementById('user-id').value;
+    let isEditMode = false;
+
+    editBtn.addEventListener('click', function () {
+        if (!isEditMode) {
+            form.querySelectorAll('input[name="Ten"], input[name="SDT"], input[name="Email"]')
+                .forEach(i => i.disabled = false);
+
+            editBtn.textContent = "Lưu thông tin thay đổi";
+            // passwordBtn.textContent = "Quay lại"; // Không cần thay đổi text của nút đổi mật khẩu nữa
+            isEditMode = true;
+        } else {
+            // Kiểm tra hợp lệ trước khi gửi
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const data = {
+                Ten: form.querySelector('input[name="Ten"]').value,
+                SDT: form.querySelector('input[name="SDT"]').value,
+                Email: form.querySelector('input[name="Email"]').value
+            };
+
+            fetch(`/api/thongtinnguoidung/${userId}/update_user_info/`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(data),
+            })
+            .then(r => r.json())
+            .then(resp => {
+                console.log("Cập nhật thành công:", resp);
+                form.querySelectorAll('input[name="Ten"], input[name="SDT"], input[name="Email"]')
+                    .forEach(i => i.disabled = true);
+                editBtn.textContent = "Thay đổi thông tin";
+                isEditMode = false;
+            })
+            .catch(err => console.error("Lỗi khi cập nhật:", err));
+        }
+    });
+
+    changeAvatarBtn.addEventListener('click', () => {
+        avatarInput.click();
+    });
+
+    avatarInput.addEventListener('change', () => {
+        const file = avatarInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        fetch(`/api/thongtinnguoidung/${userId}/upload_avatar/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("Upload thành công:", data);
+            avatarImg.src = data.avatar_url || URL.createObjectURL(file);
+        })
+        .catch(err => console.error("Lỗi khi upload avatar:", err));
+    });
+});
+</script>
+{% endblock %}

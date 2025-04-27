@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block title %}Danh sách Tài Khoản{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Danh sách Tài Khoản</h2>
+<table class="table table-bordered table-striped">
+    <thead class="table-warning">
+        <tr>
+            <th>Tên Đăng Nhập</th>
+            <th>Mật Khẩu (Hash)</th>
+            <th>Quyền</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tk in taikhoans %}
+        <tr>
+            <td>{{ tk.TaiKhoan }}</td>
+            <td>
+                {% if tk.MatKhauHash %}
+                    {{ tk.MatKhauHash|truncatechars:20 }}  <!-- Rút gọn hash cho gọn -->
+                {% else %}
+                    Chưa có hash
+                {% endif %}
+            </td>  
+            <td>{{ tk.Quyen }}</td>  <!-- Hiển thị đúng quyền -->
+            <td>{{ tk.Email|default:"Không có email" }}</td>  <!-- Hiển thị email nếu có -->
+        </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-center text-muted">Không có tài khoản nào.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
