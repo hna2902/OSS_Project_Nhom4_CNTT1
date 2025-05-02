@@ -1,33 +1,148 @@
 {% extends 'layout.html' %}
 
-{% block title %}Danh sách Kết Quả Học Tập{% endblock %}
+{% block title %}Kết quả học tập{% endblock %}
 
 {% block content %}
-<h2 class="mb-3">Danh sách Kết Quả Học Tập</h2>
+<h2 class="mb-3">Kết quả học tập</h2>
+
+<!-- Thêm Kết Quả Học Popup -->
+<button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Thêm Kết Quả Học</button>
+
+<!-- Modal thêm kết quả học -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Thêm Kết Quả Học</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addForm" method="POST" action="{% url 'ketqua' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add"> <!-- ✅ Thêm dòng này -->
+            <input type="hidden" name="MaNguoiDung" value="{{ request.session.user_id }}">
+            
+            <label for="MaMonHoc">Môn học:</label>
+            <select name="MaMonHoc" id="MaMonHoc" class="form-select mb-2" required>
+              {% for mh in monhocs %}
+                <option value="{{ mh.MaMonHoc }}">{{ mh.TenMon }}</option>
+              {% endfor %}
+            </select>
+  
+            <input type="number" name="DiemGiuaKy" placeholder="Điểm giữa kỳ" step="0.01" min="0" max="10" required>
+            <input type="number" name="DiemCuoiKy" placeholder="Điểm cuối kỳ" step="0.01" min="0" max="10" required>
+  
+            <button type="submit" class="btn btn-primary">Thêm</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+<!-- Table hiển thị kết quả học -->
 <table class="table table-bordered table-striped">
-    <thead class="table-primary">
-        <tr>
-            <th>Mã Người Dùng</th>
-            <th>Mã Kết Quả</th>
-            <th>Mã Môn</th>
-            <th>Tên Môn</th>
-            <th>Điểm Hệ 10</th>
-            <th>Điểm Hệ 4</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for kq in ketquas %}
-        <tr>
-            <td>{{ kq.MaNguoiDung }}</td>
-            <td>{{ kq.MaKetQuaHoc }}</td>
-            <td>{{ kq.MaMon }}</td>
-            <td>{{ kq.TenMon }}</td>
-            <td>{{ kq.DiemHe10 }}</td>
-            <td>{{ kq.DiemHe4 }}</td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" class="text-center text-muted">Không có kết quả học tập nào.</td></tr>
+  <thead class="table-success">
+    <tr>
+      <th>Môn Học</th>
+      <th>Điểm Giữa Kỳ</th>
+      <th>Điểm Cuối Kỳ</th>
+      <th>Điểm Trung Bình</th>
+      <th>Thao Tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for kq in ketquas %}
+    <tr data-id="{{ kq.MaKetQuaHoc }}">
+      <td>
+        {% for mh in monhocs %}
+          {% if mh.MaMonHoc == kq.MaMonHoc %}
+            {{ mh.TenMon }}
+          {% endif %}
         {% endfor %}
-    </tbody>
+      </td>
+      <td>{{ kq.DiemGiuaKy }}</td>
+      <td>{{ kq.DiemCuoiKy }}</td>
+      <td>{{ kq.DiemTrungBinh }}</td>
+      <td>
+        <!-- Button mở modal sửa -->
+        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal" onclick="loadEditForm({{ kq.MaKetQuaHoc }})">Sửa</button>
+
+        <!-- Button xóa -->
+        <form method="POST" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="MaKetQuaHoc" value="{{ kq.MaKetQuaHoc }}">
+          <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa kết quả này?')">Xóa</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5" class="text-center text-muted">Không có kết quả học nào.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
-{% endblock %}
+
+<!-- Modal sửa kết quả học -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Sửa Kết Quả Học</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm" method="POST" action="{% url 'ketqua' %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="MaKetQuaHoc" id="editMaKetQuaHoc">
+            
+            <label for="editMaMonHoc">Môn học:</label>
+            <select name="MaMonHoc" id="editMaMonHoc" class="form-select mb-2" required>
+              {% for mh in monhocs %}
+                <option value="{{ mh.MaMonHoc }}">{{ mh.TenMon }}</option>
+              {% endfor %}
+            </select>
+  
+            <input type="number" name="DiemGiuaKy" id="editDiemGiuaKy" placeholder="Điểm giữa kỳ" step="0.01" min="0" max="10" required>
+            <input type="number" name="DiemCuoiKy" id="editDiemCuoiKy" placeholder="Điểm cuối kỳ" step="0.01" min="0" max="10" required>
+  
+            <button type="submit" class="btn btn-primary">Lưu</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% endblock %}
+  
+  <script>
+    function loadEditForm(maKetQuaHoc) {
+        fetch(`/api/ketqua/${maKetQuaHoc}/`)
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('editMaKetQuaHoc').value = data.MaKetQuaHoc;
+            document.getElementById('editDiemGiuaKy').value = data.DiemGiuaKy;
+            document.getElementById('editDiemCuoiKy').value = data.DiemCuoiKy;
+            
+            // Chọn môn học tương ứng trong modal
+            var monHocSelect = document.getElementById('editMaMonHoc');
+            for (var option of monHocSelect.options) {
+              if (option.value === data.MaMonHoc.toString()) {
+                option.selected = true;
+                break;
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error loading edit data:', error);
+          });
+     }
+  
+    function confirmDelete(maKetQuaHoc) {
+      return confirm(`Bạn có chắc muốn xóa kết quả học ${maKetQuaHoc}?`);
+    }
+  </script>
+  

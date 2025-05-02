@@ -9,6 +9,8 @@ const TKB = () => {
   const [monHocs, setMonHocs] = useState([]);
   const [formData, setFormData] = useState({ Thu: "", MonHoc: "", ThoiGianHoc: "" });
   const [refresh, setRefresh] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
 
   const thoiGianSet = [...new Set(tkbs.map(t => t.ThoiGianHoc))].sort();
 
@@ -24,12 +26,27 @@ const TKB = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post("/api/thoikhoabieu/", formData)
-      .then(() => {
-        setFormData({ Thu: "", MonHoc: "", ThoiGianHoc: "" });
-        setRefresh(prev => !prev);
-      })
-      .catch(err => alert(err.response?.data?.error || "Có lỗi xảy ra!"));
+    if (isEditing && editId !== null) {
+      axios.put(`/api/thoikhoabieu/${editId}/`, formData)
+        .then(() => {
+          resetForm();
+          setRefresh(prev => !prev);
+        })
+        .catch(err => alert(err.response?.data?.error || "Có lỗi xảy ra khi cập nhật!"));
+    } else {
+      axios.post("/api/thoikhoabieu/", formData)
+        .then(() => {
+          resetForm();
+          setRefresh(prev => !prev);
+        })
+        .catch(err => alert(err.response?.data?.error || "Có lỗi xảy ra!"));
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ Thu: "", MonHoc: "", ThoiGianHoc: "" });
+    setIsEditing(false);
+    setEditId(null);
   };
 
   const handleDeleteMon = (idtkb) => {
@@ -38,11 +55,21 @@ const TKB = () => {
       .catch(err => alert("Xóa thất bại"));
   };
 
+  const handleEditMon = (tkb) => {
+    setFormData({
+      Thu: tkb.Thu,
+      MonHoc: tkb.MonHoc,
+      ThoiGianHoc: tkb.ThoiGianHoc,
+    });
+    setIsEditing(true);
+    setEditId(tkb.IDTKB);
+  };
+
   return (
     <Layout>
       <h2 className="mb-4">Thời Khóa Biểu</h2>
 
-      {/* Form thêm */}
+      {/* Form thêm/sửa */}
       <form onSubmit={handleSubmit} className="row mb-4">
         <div className="col">
           <select className="form-control" value={formData.MonHoc} onChange={e => setFormData({ ...formData, MonHoc: e.target.value })} required>
@@ -64,7 +91,12 @@ const TKB = () => {
           <input type="text" className="form-control" placeholder="08:00 - 10:00" value={formData.ThoiGianHoc} onChange={e => setFormData({ ...formData, ThoiGianHoc: e.target.value })} required />
         </div>
         <div className="col">
-          <button type="submit" className="btn btn-success">Thêm</button>
+          <button type="submit" className={`btn ${isEditing ? "btn-warning" : "btn-success"}`}>
+            {isEditing ? "Cập nhật" : "Thêm"}
+          </button>
+          {isEditing && (
+            <button type="button" onClick={resetForm} className="btn btn-secondary ml-2">Hủy</button>
+          )}
         </div>
       </form>
 
@@ -86,8 +118,11 @@ const TKB = () => {
                   <td key={thu}>
                     {mon ? (
                       <>
-                        {mon.MonHoc}
-                        <button onClick={() => handleDeleteMon(mon.IDTKB)} className="btn btn-sm btn-danger ml-2">Xóa</button>
+                        <strong>{mon.MonHoc}</strong>
+                        <div className="mt-1">
+                          <button onClick={() => handleEditMon(mon)} className="btn btn-sm btn-info mr-1">Sửa</button>
+                          <button onClick={() => handleDeleteMon(mon.IDTKB)} className="btn btn-sm btn-danger">Xóa</button>
+                        </div>
                       </>
                     ) : null}
                   </td>

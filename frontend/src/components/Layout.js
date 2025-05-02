@@ -23,8 +23,9 @@ const Layout = ({ currentUser: propUser, children }) => {
   const handleLogout = async () => {
     try {
       await axios.post('http://localhost:8000/api/logout/', {}, {
-        withCredentials: true,   // Gửi cookie để backend biết session nào cần xóa
+        withCredentials: true, // Bắt buộc để gửi session cookie qua
       });
+      
 
       // Xóa thông tin user local
       localStorage.removeItem('user');

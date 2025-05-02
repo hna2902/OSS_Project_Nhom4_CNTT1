@@ -11,6 +11,7 @@ const QLMH = () => {
     ThoiGianKetThuc: "",
     SoTinChi: ""
   });
+  const [editMonHoc, setEditMonHoc] = useState(null); // State để lưu môn học cần sửa
 
   useEffect(() => {
     // Lấy danh sách môn học
@@ -20,22 +21,10 @@ const QLMH = () => {
   const fetchMonHoc = () => {
     axios.get("/api/monhoc/", { withCredentials: true })
       .then(res => {
-        // Debug chi tiết
-        console.log("API Response:", {
-          status: res.status,
-          dataType: Array.isArray(res.data) ? 'array' : typeof res.data,
-          data: res.data
-        });
-  
-        // Đảm bảo data là array
-        const dataArray = Array.isArray(res.data) ? res.data : [];
-        setMonhocs(dataArray);
+        setMonhocs(res.data);
       })
       .catch(err => {
-        console.error("API Error:", {
-          message: err.message,
-          response: err.response?.data
-        });
+        console.error("API Error:", err);
       });
   };
 
@@ -46,14 +35,28 @@ const QLMH = () => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    axios.post("/api/monhoc/", form, { withCredentials: true })
-      .then(() => {
-        fetchMonHoc();
-        setForm({ TenMon: "", GiangVien: "", ThoiGianBatDau: "", ThoiGianKetThuc: "", SoTinChi: "" });
-      })
-      .catch(err => {
-        console.error("Error submitting form:", err);
-      });
+    if (editMonHoc) {
+      // Sửa môn học
+      axios.put(`/api/monhoc/${editMonHoc.MaMonHoc}/`, form, { withCredentials: true })
+        .then(() => {
+          fetchMonHoc();
+          setForm({ TenMon: "", GiangVien: "", ThoiGianBatDau: "", ThoiGianKetThuc: "", SoTinChi: "" });
+          setEditMonHoc(null); // Reset khi sửa thành công
+        })
+        .catch(err => {
+          console.error("Error submitting form:", err);
+        });
+    } else {
+      // Thêm môn học
+      axios.post("/api/monhoc/", form, { withCredentials: true })
+        .then(() => {
+          fetchMonHoc();
+          setForm({ TenMon: "", GiangVien: "", ThoiGianBatDau: "", ThoiGianKetThuc: "", SoTinChi: "" });
+        })
+        .catch(err => {
+          console.error("Error submitting form:", err);
+        });
+    }
   };
 
   const handleDelete = id => {
@@ -62,6 +65,17 @@ const QLMH = () => {
       .catch(err => {
         console.error("Error deleting monhoc:", err);
       });
+  };
+
+  const handleEdit = monHoc => {
+    setEditMonHoc(monHoc); // Đặt môn học cần sửa vào state
+    setForm({
+      TenMon: monHoc.TenMon,
+      GiangVien: monHoc.GiangVien,
+      ThoiGianBatDau: monHoc.ThoiGianBatDau,
+      ThoiGianKetThuc: monHoc.ThoiGianKetThuc,
+      SoTinChi: monHoc.SoTinChi
+    });
   };
 
   return (
@@ -74,7 +88,7 @@ const QLMH = () => {
         <input type="date" name="ThoiGianBatDau" value={form.ThoiGianBatDau} onChange={handleInput} required />
         <input type="date" name="ThoiGianKetThuc" value={form.ThoiGianKetThuc} onChange={handleInput} required />
         <input type="number" name="SoTinChi" placeholder="Số tín chỉ" value={form.SoTinChi} onChange={handleInput} required min="1" />
-        <button type="submit" className="btn btn-primary">Thêm</button>
+        <button type="submit" className="btn btn-primary">{editMonHoc ? "Cập Nhật" : "Thêm"}</button>
       </form>
 
       <table className="table table-bordered table-striped">
@@ -90,28 +104,29 @@ const QLMH = () => {
           </tr>
         </thead>
         <tbody>
-  {monhocs.map(mh => (
-    <tr key={mh.MaMonHoc}> {/* Sửa từ _id sang MaMonHoc */}
-      <td>{mh.MaMonHoc}</td>
-      <td>{mh.TenMon}</td>
-      <td>{mh.GiangVien}</td>
-      <td>{new Date(mh.ThoiGianBatDau).toLocaleDateString()}</td>
-      <td>{new Date(mh.ThoiGianKetThuc).toLocaleDateString()}</td>
-      <td>{mh.SoTinChi}</td>
-      <td>
-        <button 
-          className="btn btn-danger btn-sm" 
-          onClick={() => handleDelete(mh.MaMonHoc)} // Sửa từ _id sang MaMonHoc
-        >
-          Xoá
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+          {monhocs.map(mh => (
+            <tr key={mh.MaMonHoc}>
+              <td>{mh.MaMonHoc}</td>
+              <td>{mh.TenMon}</td>
+              <td>{mh.GiangVien}</td>
+              <td>{new Date(mh.ThoiGianBatDau).toLocaleDateString()}</td>
+              <td>{new Date(mh.ThoiGianKetThuc).toLocaleDateString()}</td>
+              <td>{mh.SoTinChi}</td>
+              <td>
+                <button className="btn btn-warning btn-sm" onClick={() => handleEdit(mh)}>
+                  Sửa
+                </button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(mh.MaMonHoc)}>
+                  Xoá
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </Layout>
   );
 };
 
 export default QLMH;
+

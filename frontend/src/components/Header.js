@@ -9,7 +9,10 @@ const Header = ({ currentUser, onLogout }) => {
   const handleLogout = async () => {
     try {
       // Gọi API logout backend
-      await axios.post('/api/logout/', {}, { withCredentials: true }); // Cần withCredentials để gửi session cookie
+      await axios.post('http://localhost:8000/api/logout/', {}, {
+        withCredentials: true, // Bắt buộc để gửi session cookie qua
+      });
+       // Cần withCredentials để gửi session cookie
 
       // Xóa user ở frontend
       onLogout();

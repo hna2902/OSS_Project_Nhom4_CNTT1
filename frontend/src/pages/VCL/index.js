@@ -13,6 +13,13 @@ function VCL() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [formData, setFormData] = useState({
+    NhacNho: '',
+    GhiChu: '',
+    ThoiHan: '',
+    MaMonHoc: '',
+  });
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -20,7 +27,6 @@ function VCL() {
   const fetchData = async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       const [monhocRes, vieccanlamRes] = await Promise.all([
         axios.get('http://localhost:8000/api/monhoc/', { withCredentials: true }),
@@ -48,33 +54,32 @@ function VCL() {
     }
   };
 
+  const closeModalManually = () => {
+    const modalElement = document.getElementById('themViecModal');
+    if (modalElement) {
+      const modal = bootstrap.Modal.getInstance(modalElement);
+      if (modal) modal.hide();
+    }
+    // Xử lý phần bị tối màn hình
+    document.body.classList.remove('modal-open');
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.remove();
+  };
+
   const handleAddOrUpdateViec = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      const form = e.target;
-      const newViec = {
-        NhacNho: form.NhacNho.value,
-        GhiChu: form.GhiChu.value,
-        ThoiHan: form.ThoiHan.value,
-        MaMonHoc: form.MaMonHoc.value,
-      };
-
+      const newViec = { ...formData };
       if (selectedViec) {
         await axios.put(`http://localhost:8000/api/vieccanlam/${selectedViec.MaViec}/`, newViec, { withCredentials: true });
       } else {
         await axios.post('http://localhost:8000/api/vieccanlam/', newViec, { withCredentials: true });
       }
-
       await fetchData();
       setSelectedViec(null);
-      form.reset();
-
-      // --- Sửa lỗi modal ở đây ---
-      const modalElement = document.getElementById('themViecModal');
-      const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-      modal.hide();
+      setFormData({ NhacNho: '', GhiChu: '', ThoiHan: '', MaMonHoc: '' });
+      closeModalManually();
     } catch (error) {
       console.error('Error:', error);
       setError(error.response?.data?.detail || error.message);
@@ -85,11 +90,11 @@ function VCL() {
 
   const handleDeleteViec = async (maViec) => {
     if (!window.confirm('Bạn có chắc muốn xóa việc này không?')) return;
-
     setIsLoading(true);
     try {
       await axios.delete(`http://localhost:8000/api/vieccanlam/${maViec}/`, { withCredentials: true });
       await fetchData();
+      closeModalManually();  // Đề phòng backdrop còn tồn tại
     } catch (error) {
       console.error('Error:', error);
       setError(error.response?.data?.detail || error.message);
@@ -100,8 +105,32 @@ function VCL() {
 
   const handleEditViec = (viec) => {
     setSelectedViec(viec);
-    const modal = new bootstrap.Modal(document.getElementById('themViecModal'));
-    modal.show();
+    setFormData({
+      NhacNho: viec.NhacNho || '',
+      GhiChu: viec.GhiChu || '',
+      ThoiHan: viec.ThoiHan || '',
+      MaMonHoc: viec.MaMonHoc || '',
+    });
+    const modalElement = document.getElementById('themViecModal');
+    if (modalElement) {
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+      modal.show();
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleOpenAddModal = () => {
+    setSelectedViec(null);
+    setFormData({ NhacNho: '', GhiChu: '', ThoiHan: '', MaMonHoc: '' });
+    const modalElement = document.getElementById('themViecModal');
+    if (modalElement) {
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+      modal.show();
+    }
   };
 
   const formatDate = (dateString) => {
@@ -117,23 +146,14 @@ function VCL() {
     <Layout>
       <div className="container py-4">
         <h1 className="mb-4">Danh sách việc cần làm</h1>
-
-        {/* Bảng việc cần làm */}
         <div className="card">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="card-title mb-0">Danh sách công việc</h5>
-              <button
-                type="button"
-                className="btn btn-success"
-                data-bs-toggle="modal"
-                data-bs-target="#themViecModal"
-                onClick={() => setSelectedViec(null)}
-              >
+              <button type="button" className="btn btn-success" onClick={handleOpenAddModal}>
                 <i className="bi bi-plus-circle me-2"></i>Thêm Việc
               </button>
             </div>
-
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead className="table-light">
@@ -155,16 +175,10 @@ function VCL() {
                         <td>{formatDate(viec.ThoiHan)}</td>
                         <td>
                           <div className="d-flex gap-2">
-                            <button
-                              className="btn btn-sm btn-warning"
-                              onClick={() => handleEditViec(viec)}
-                            >
+                            <button className="btn btn-sm btn-warning" onClick={() => handleEditViec(viec)}>
                               <i className="bi bi-pencil"></i>
                             </button>
-                            <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => handleDeleteViec(viec.MaViec)}
-                            >
+                            <button className="btn btn-sm btn-danger" onClick={() => handleDeleteViec(viec.MaViec)}>
                               <i className="bi bi-trash"></i>
                             </button>
                           </div>
@@ -173,9 +187,7 @@ function VCL() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="text-center text-muted py-4">
-                        Không có việc cần làm nào.
-                      </td>
+                      <td colSpan="5" className="text-center text-muted py-4">Không có việc cần làm nào.</td>
                     </tr>
                   )}
                 </tbody>
@@ -185,13 +197,7 @@ function VCL() {
         </div>
 
         {/* Modal thêm/sửa việc */}
-        <div
-          className="modal fade"
-          id="themViecModal"
-          tabIndex="-1"
-          aria-labelledby="themViecLabel"
-          aria-hidden="true"
-        >
+        <div className="modal fade" id="themViecModal" tabIndex="-1" aria-labelledby="themViecLabel" aria-hidden="true">
           <div className="modal-dialog">
             <div className="modal-content">
               <form onSubmit={handleAddOrUpdateViec}>
@@ -199,12 +205,7 @@ function VCL() {
                   <h5 className="modal-title" id="themViecLabel">
                     {selectedViec ? 'Sửa việc cần làm' : 'Thêm việc cần làm'}
                   </h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Đóng"
-                  ></button>
+                  <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
@@ -213,7 +214,8 @@ function VCL() {
                       type="text"
                       className="form-control"
                       name="NhacNho"
-                      defaultValue={selectedViec?.NhacNho || ''}
+                      value={formData.NhacNho}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
@@ -222,7 +224,8 @@ function VCL() {
                     <textarea
                       className="form-control"
                       name="GhiChu"
-                      defaultValue={selectedViec?.GhiChu || ''}
+                      value={formData.GhiChu}
+                      onChange={handleInputChange}
                       required
                     ></textarea>
                   </div>
@@ -232,7 +235,8 @@ function VCL() {
                       type="date"
                       className="form-control"
                       name="ThoiHan"
-                      defaultValue={selectedViec?.ThoiHan || ''}
+                      value={formData.ThoiHan}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
@@ -241,12 +245,11 @@ function VCL() {
                     <select
                       className="form-select"
                       name="MaMonHoc"
-                      defaultValue={selectedViec?.MaMonHoc || ''}
+                      value={formData.MaMonHoc}
+                      onChange={handleInputChange}
                       required
                     >
-                      <option value="" disabled>
-                        Chọn môn học
-                      </option>
+                      <option value="" disabled>Chọn môn học</option>
                       {monhoc.map((mon) => (
                         <option key={mon.MaMonHoc} value={mon.MaMonHoc}>
                           {mon.TenMon}
@@ -257,17 +260,10 @@ function VCL() {
                 </div>
                 <div className="modal-footer">
                   <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                    {isLoading ? (
-                      <span className="spinner-border spinner-border-sm me-1"></span>
-                    ) : null}
+                    {isLoading && <span className="spinner-border spinner-border-sm me-1"></span>}
                     {selectedViec ? 'Cập nhật' : 'Thêm'}
                   </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                    disabled={isLoading}
-                  >
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" disabled={isLoading}>
                     Hủy
                   </button>
                 </div>

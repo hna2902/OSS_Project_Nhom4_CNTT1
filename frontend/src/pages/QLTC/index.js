@@ -55,15 +55,19 @@ const QLTC = () => {
   };
 
   // Chọn để chỉnh sửa
-  const handleEditTinChi = (tc) => {
-    setFormData({
-      MaMon: tc.MaMonHoc || "", // Có thể cần sửa tùy backend
-      TongTinChi: tc.TongTinChi,
-      SoChiDat: tc.SoChiDat,
-      SoChiNo: tc.SoChiNo,
-    });
-    setEditingId(tc.IDTinChi);
-  };
+ // Chọn để chỉnh sửa
+ const handleEditTinChi = (tc) => {
+  setFormData({
+    MaMon: tc.MaMon || "", // sửa ở đây
+    TongTinChi: tc.TongTinChi,
+    SoChiDat: tc.SoChiDat,
+    SoChiNo: tc.SoChiNo,
+  });
+  setEditingId(tc.IDTinChi);
+};
+
+
+
 
   // Huỷ chỉnh sửa
   const handleCancelEdit = () => {

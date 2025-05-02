@@ -78,6 +78,7 @@ class TaiKhoanViewSet(viewsets.ViewSet):
         if user and check_password(mat_khau, user["MatKhauHash"]):
             # Tạo session và lưu user_id vào session
             request.session['user_id'] = str(user['_id'])
+            
 
             # Không trả mật khẩu về client
             user.pop("MatKhauHash", None)

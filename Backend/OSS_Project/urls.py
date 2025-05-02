@@ -51,7 +51,7 @@ urlpatterns = [
     path('update_schedule/<pk>/', update_schedule, name='update_schedule'),  # Đảm bảo đã thêm URL cho update_schedule
     path('delete_schedule/<pk>/',delete_schedule, name='delete_schedule'),
     path('delete_schedule_subject/<pk>/', delete_schedule_subject, name='delete_schedule_subject'),
-
+    
 
     path('thongtinnguoidung/', thongtinnguoidung_index, name='thongtinnguoidung'),
     path('thay-doi-mat-khau/', change_password_view, name='change_password'), # URL cho trang đổi mật khẩu
