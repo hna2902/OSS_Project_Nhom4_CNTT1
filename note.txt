@@ -2,7 +2,6 @@ python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 
-tạo tài superuser
 
 Tài khoản admin
 admin
@@ -20,3 +19,4 @@ git push
 
 lệnh kéo project từ github về
 git pull origin main  # Hoặc `master` nếu repo dùng nhánh `master`
+

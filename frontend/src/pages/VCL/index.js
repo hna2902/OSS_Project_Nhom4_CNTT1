@@ -2,11 +2,15 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import * as bootstrap from 'bootstrap';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react'; // Import useContext
 import Layout from '../../components/Layout';
 import axios from 'axios';
+import { UserContext } from '../../contexts/UserContext'; // Import UserContext
 
 function VCL() {
+  // Lấy thông tin người dùng từ context
+  const { user, setUser, loadingUser } = useContext(UserContext); // Sử dụng useContext để lấy thông tin người dùng từ context
+
   const [monhoc, setMonhoc] = useState([]);
   const [vieccanlam, setViecCanLam] = useState([]);
   const [selectedViec, setSelectedViec] = useState(null);

@@ -1,20 +1,10 @@
-// src/pages/Home.js
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import Layout from '../../components/Layout';
-import axios from 'axios';
+import { UserContext } from '../../contexts/UserContext'; // Import UserContext
 
 const Home = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    axios.get('/api/user', { withCredentials: true })
-      .then(response => {
-        setUser(response.data); // Cập nhật state với thông tin người dùng
-      })
-      .catch(error => {
-        console.error("Có lỗi xảy ra khi lấy thông tin người dùng:", error);
-      });
-  }, []);
+  // Lấy thông tin người dùng từ context
+  const { user } = useContext(UserContext);
 
   return (
     <Layout currentUser={user}>

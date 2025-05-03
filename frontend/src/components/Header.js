@@ -1,43 +1,40 @@
 // src/components/Header.js
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { UserContext } from '../contexts/UserContext';
+import axios from '../utils/axios';
 
-const Header = ({ currentUser, onLogout }) => {
+const Header = () => {
+  const { user, setUser, loadingUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      // Gọi API logout backend
-      await axios.post('http://localhost:8000/api/logout/', {}, {
-        withCredentials: true, // Bắt buộc để gửi session cookie qua
-      });
-       // Cần withCredentials để gửi session cookie
-
-      // Xóa user ở frontend
-      onLogout();
-
-      // Điều hướng về trang đăng nhập
+      await axios.post('/api/logout/', {}, { withCredentials: true });
+      localStorage.removeItem('user');
+      setUser(null);
       navigate('/login');
-    } catch (error) {
-      console.error('Logout failed', error);
+    } catch (err) {
+      console.error('Lỗi đăng xuất:', err);
     }
   };
+
+  if (loadingUser) return null;
 
   return (
     <header className="d-flex justify-content-between align-items-center mb-4">
       <h2 className="text-primary">Quản Lý Học Tập</h2>
       <div className="d-flex align-items-center">
-        {currentUser ? (
+        {user ? (
           <>
             <img
-              src={currentUser.Avatar || '/default_avatar.png'}
+              src={user.Avatar ? `${user.Avatar.startsWith('http') ? '' : 'http://localhost:8000'}${user.Avatar}` : '/static/img/default_avatar.png'}
               alt="Avatar"
               className="rounded-circle me-2"
               width="40"
               height="40"
             />
-            <span className="me-2">{currentUser.Ten}</span>
+            <span className="me-2">{user.Ten}</span>
             <button className="btn btn-link" onClick={handleLogout}>Đăng xuất</button>
           </>
         ) : (

@@ -1,37 +1,24 @@
 // src/components/Layout.js
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';    // 🔥 Thêm axios để gọi API
+import axios from '../utils/axios'; // Sử dụng instance axios có cấu hình sẵn
+import { UserContext } from '../contexts/UserContext'; // 🔥 Dùng context
 import './Layout.css';
 
-const Layout = ({ currentUser: propUser, children }) => {
-  const [currentUser, setCurrentUser] = useState(propUser);
+const Layout = ({ children }) => {
+  const { user, setUser } = useContext(UserContext); // 🔥 Lấy từ context
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!propUser) {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setCurrentUser(JSON.parse(storedUser));
-      }
-    }
-  }, [propUser]);
-
-  // 🔥 Hàm đăng xuất đầy đủ: gọi API + xóa localStorage + điều hướng
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:8000/api/logout/', {}, {
-        withCredentials: true, // Bắt buộc để gửi session cookie qua
+      await axios.post('/api/logout/', {}, {
+        withCredentials: true,
       });
-      
 
-      // Xóa thông tin user local
       localStorage.removeItem('user');
-      setCurrentUser(null);
-
-      // Chuyển hướng về trang đăng nhập
+      setUser(null); // 🔥 Cập nhật lại context
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
@@ -40,15 +27,10 @@ const Layout = ({ currentUser: propUser, children }) => {
 
   return (
     <div className="d-flex">
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
       <div className="flex-grow-1 p-4">
-        {/* Header */}
-        <Header currentUser={currentUser} onLogout={handleLogout} />
-
-        {/* Nội dung chính */}
+        <Header currentUser={user} onLogout={handleLogout} />
         {children}
       </div>
     </div>

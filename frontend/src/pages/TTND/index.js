@@ -1,43 +1,88 @@
-import React, { useEffect, useState } from 'react';
-import Layout from '../../components/Layout';
+import React, { useState, useEffect, useContext } from 'react';
+import Layout from '../../components/Layout'; // Đảm bảo import Layout
 import axios from '../../utils/axios';
+import { UserContext } from '../../contexts/UserContext'; // Import UserContext
 
-const UserInfo = () => {
-  const [user, setUser] = useState(null);
+const UserInfo = ({ onAvatarUpdate }) => { 
+  const { user, setUser, loadingUser } = useContext(UserContext);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const userId = JSON.parse(localStorage.getItem('user'))?._id;
+  const [formErrors, setFormErrors] = useState({
+    SDT: '',
+    Email: ''
+  });
 
-  useEffect(() => {
-    if (!userId) {
-      setError('Không tìm thấy người dùng!');
-      setLoading(false);
-      return;
-    }
+  if (loadingUser) {
+    return <div>Đang tải thông tin người dùng...</div>;
+  }
 
-    axios.get(`/api/thongtinnguoidung/${userId}/`)
-      .then(res => setUser(res.data))
-      .catch(err => {
-        console.error('Lỗi khi lấy thông tin người dùng:', err);
-        setError(err.response?.data?.error || 'Không thể lấy thông tin người dùng');
-      })
-      .finally(() => setLoading(false));
-  }, [userId]);
+  if (!user) {
+    return <div className="text-danger">Không tìm thấy thông tin người dùng.</div>;
+  }
 
   const handleEditInfo = async () => {
-    if (!userId) return;
-
     if (isEditMode) {
+      const phonePattern = /^0\d{9}$/;
+      const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      let hasError = false;
+      let newErrors = {
+        SDT: '',
+        Email: ''
+      };
+  
+      // Kiểm tra SDT nếu có nhập vào
+      if (user.SDT && !phonePattern.test(user.SDT)) {
+        newErrors.SDT = 'Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng.';
+        hasError = true;
+      }
+  
+      // Kiểm tra Email nếu có nhập vào  
+      if (user.Email && !emailPattern.test(user.Email)) {
+        newErrors.Email = 'Email không hợp lệ. Vui lòng nhập đúng định dạng.';
+        hasError = true;
+      }
+  
+      // Cập nhật state errors
+      setFormErrors(newErrors);
+      
+      // Nếu có lỗi thì dừng lại
+      if (hasError) {
+        return;
+      }
+  
+      // Kiểm tra xem _id có tồn tại trong user không
+      if (!user._id) {
+        setError("Không tìm thấy ID người dùng.");
+        return;
+      }
+  
       try {
-        const res = await axios.patch(`/api/thongtinnguoidung/${userId}/update_user_info/`, {
+        // Gọi API để cập nhật thông tin người dùng
+        const res = await axios.patch(`/api/thongtinnguoidung/${user._id}/update_user_info/`, {
           Ten: user.Ten,
           SDT: user.SDT,
           Email: user.Email,
         });
-        setUser(prev => ({ ...prev, ...res.data }));
-        setIsEditMode(false);
+  
+        // Kiểm tra phản hồi từ API PATCH
+        if (res.status === 200) {
+          // Sau khi cập nhật thành công, lấy lại thông tin người dùng mới nhất từ API
+          const updatedUser = await axios.get(`/api/thongtinnguoidung/${user._id}/`);
+          setUser(prev => ({
+            ...prev,
+            ...updatedUser.data
+          }));
+
+  
+          // Nếu có LocalStorage, xóa nó và lưu lại thông tin mới
+          localStorage.removeItem('user');
+          localStorage.setItem('user', JSON.stringify(updatedUser.data));
+  
+          setIsEditMode(false);
+        } else {
+          setError("Không thể cập nhật thông tin người dùng.");
+        }
       } catch (err) {
         console.error('Lỗi khi cập nhật thông tin:', err);
         setError(err.response?.data?.error || 'Không thể cập nhật thông tin');
@@ -46,43 +91,41 @@ const UserInfo = () => {
       setIsEditMode(true);
     }
   };
-
+  
+  
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
-    if (!file || !userId) return;
+    if (!file) return;
 
     const formData = new FormData();
     formData.append('avatar', file);
 
     try {
-      const res = await axios.post(`/api/thongtinnguoidung/${userId}/upload_avatar/`, formData, {
+      const res = await axios.post(`/api/thongtinnguoidung/${user._id}/upload_avatar/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
       setUser(prev => ({ ...prev, Avatar: res.data.avatar_url }));
+      if (onAvatarUpdate) {
+        onAvatarUpdate(res.data.avatar_url);
+      }
     } catch (err) {
       console.error('Lỗi khi upload avatar:', err);
       setError(err.response?.data?.error || 'Không thể upload avatar');
     }
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div>Đang tải thông tin người dùng...</div>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="text-danger">{error}</div>
-      </Layout>
-    );
-  }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUser(prev => ({ ...prev, [name]: value }));
+    
+    // Xóa lỗi khi người dùng đang sửa trường này
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
 
   return (
     <Layout>
@@ -92,7 +135,7 @@ const UserInfo = () => {
           <div className="row">
             <div className="col-md-3 text-center">
               <img
-                src={user.Avatar || '/static/img/default_avatar.png'}
+                src={user?.Avatar || '/static/img/default_avatar.png'}
                 alt="Avatar"
                 className="rounded-circle mb-2"
                 width="100"
@@ -122,23 +165,26 @@ const UserInfo = () => {
                   <input
                     type="text"
                     className="form-control"
-                    value={user.Ten || ''}
+                    value={user?.Ten || ''}
                     disabled={!isEditMode}
-                    onChange={(e) => setUser({ ...user, Ten: e.target.value })}
+                    onChange={handleInputChange}
+                    name="Ten"
                   />
                 </div>
                 <div className="col-sm-6">
                   <label className="form-label">Số điện thoại</label>
                   <input
                     type="tel"
-                    className="form-control"
-                    value={user.SDT || ''}
+                    className={`form-control ${formErrors.SDT ? 'is-invalid' : ''}`}
+                    value={user?.SDT || ''}
                     disabled={!isEditMode}
                     pattern="^0\d{9}$"
                     title="Số điện thoại phải có 10 chữ số và bắt đầu bằng số 0"
                     placeholder="0123456789"
-                    onChange={(e) => setUser({ ...user, SDT: e.target.value })}
+                    onChange={handleInputChange}
+                    name="SDT"
                   />
+                  {formErrors.SDT && <div className="invalid-feedback">{formErrors.SDT}</div>}
                 </div>
               </div>
 
@@ -148,7 +194,7 @@ const UserInfo = () => {
                   <input
                     type="text"
                     className="form-control"
-                    value={user.TaiKhoan || ''}
+                    value={user?.TaiKhoan || ''}
                     disabled
                   />
                 </div>
@@ -156,14 +202,16 @@ const UserInfo = () => {
                   <label className="form-label">Email</label>
                   <input
                     type="email"
-                    className="form-control"
-                    value={user.Email || ''}
+                    className={`form-control ${formErrors.Email ? 'is-invalid' : ''}`}
+                    value={user?.Email || ''}
                     disabled={!isEditMode}
                     pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$"
                     title="Email không hợp lệ, ví dụ: example@gmail.com"
                     placeholder="example@gmail.com"
-                    onChange={(e) => setUser({ ...user, Email: e.target.value })}
+                    onChange={handleInputChange}
+                    name="Email"
                   />
+                  {formErrors.Email && <div className="invalid-feedback">{formErrors.Email}</div>}
                 </div>
               </div>
 

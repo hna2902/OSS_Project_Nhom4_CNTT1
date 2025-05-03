@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Layout from "../../components/Layout";
 import axios from '../../utils/axios';
+import { UserContext } from "../../contexts/UserContext";
 
 const KQHT = () => {
+  const { user, loadingUser } = useContext(UserContext);  // Sử dụng context người dùng
   const [ketqua, setKetqua] = useState([]);
   const [monHocList, setMonHocList] = useState([]);
   const [formData, setFormData] = useState({
@@ -12,11 +14,14 @@ const KQHT = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [currentKQ, setCurrentKQ] = useState(null);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetchKetQua();
-    fetchMonHocList();
-  }, []);
+    if (user) { // Đảm bảo rằng user đã được tải thành công
+      fetchKetQua();
+      fetchMonHocList();
+    }
+  }, [user]);  // Chỉ gọi lại khi user thay đổi
 
   const fetchKetQua = () => {
     axios.get("/api/ketqua/")
@@ -32,10 +37,18 @@ const KQHT = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const { DiemGiuaKy, DiemCuoiKy } = formData;
+
+    // Kiểm tra tính hợp lệ của điểm
+    if (DiemGiuaKy < 0 || DiemGiuaKy > 10 || DiemCuoiKy < 0 || DiemCuoiKy > 10) {
+      setMessage("Điểm phải nằm trong khoảng từ 0 đến 10.");
+      return;
+    }
+
     const payload = {
       ...formData,
-      DiemGiuaKy: parseFloat(formData.DiemGiuaKy),
-      DiemCuoiKy: parseFloat(formData.DiemCuoiKy),
+      DiemGiuaKy: parseFloat(DiemGiuaKy),
+      DiemCuoiKy: parseFloat(DiemCuoiKy),
     };
 
     const apiCall = isEditing
@@ -50,8 +63,12 @@ const KQHT = () => {
           DiemGiuaKy: "",
           DiemCuoiKy: "",
         });
+        setMessage(isEditing ? "Cập nhật kết quả thành công!" : "Thêm kết quả thành công!");
       })
-      .catch(err => console.error("Error submitting form:", err));
+      .catch(err => {
+        console.error("Error submitting form:", err);
+        setMessage("Đã có lỗi xảy ra khi thêm/sửa kết quả.");
+      });
   };
 
   const handleEdit = (kq) => {
@@ -65,14 +82,28 @@ const KQHT = () => {
   };
 
   const handleDelete = (id) => {
-    axios.delete(`/api/ketqua/${id}/`)
-      .then(() => fetchKetQua())
-      .catch(err => console.error("Error deleting result:", err));
+    if (window.confirm("Bạn có chắc chắn muốn xóa kết quả này?")) {
+      axios.delete(`/api/ketqua/${id}/`)
+        .then(() => {
+          fetchKetQua();
+          setMessage("Xóa kết quả thành công!");
+        })
+        .catch(err => {
+          console.error("Error deleting result:", err);
+          setMessage("Đã có lỗi xảy ra khi xóa kết quả.");
+        });
+    }
   };
+
+  if (loadingUser) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Layout>
       <h2 className="mb-4">Kết Quả Học Tập</h2>
+
+      {message && <div className="alert alert-info">{message}</div>}
 
       {/* Form thêm/sửa kết quả học tập */}
       <form onSubmit={handleSubmit} className="row mb-4">

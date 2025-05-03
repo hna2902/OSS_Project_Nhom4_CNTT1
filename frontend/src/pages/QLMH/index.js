@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Layout from '../../components/Layout';
 import axios from '../../utils/axios'; // Đảm bảo bạn đã cấu hình axios đúng
+import { UserContext } from "../../contexts/UserContext";
 
 const QLMH = () => {
+  const { user, loadingUser } = useContext(UserContext); // Lấy thông tin người dùng từ UserContext
   const [monhocs, setMonhocs] = useState([]);
   const [form, setForm] = useState({
     TenMon: "",
@@ -14,9 +16,11 @@ const QLMH = () => {
   const [editMonHoc, setEditMonHoc] = useState(null); // State để lưu môn học cần sửa
 
   useEffect(() => {
-    // Lấy danh sách môn học
-    fetchMonHoc();
-  }, []);
+    if (user) {
+      // Lấy danh sách môn học khi người dùng đã được tải
+      fetchMonHoc();
+    }
+  }, [user]); // Gọi lại khi user thay đổi
 
   const fetchMonHoc = () => {
     axios.get("/api/monhoc/", { withCredentials: true })
@@ -78,6 +82,10 @@ const QLMH = () => {
     });
   };
 
+  if (loadingUser) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Layout>
       <h2>Danh sách Môn Học</h2>
@@ -129,4 +137,3 @@ const QLMH = () => {
 };
 
 export default QLMH;
-

@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Layout from "../../components/Layout";
 import axios from "../../utils/axios";
+import { UserContext } from "../../contexts/UserContext"; // Import UserContext
 
 const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
 const TKB = () => {
+  const { user } = useContext(UserContext); // Lấy thông tin người dùng từ UserContext
   const [tkbs, setTkbs] = useState([]);
   const [monHocs, setMonHocs] = useState([]);
   const [formData, setFormData] = useState({ Thu: "", MonHoc: "", ThoiGianHoc: "" });
@@ -69,13 +71,16 @@ const TKB = () => {
     <Layout>
       <h2 className="mb-4">Thời Khóa Biểu</h2>
 
+      {/* Hiển thị tên người dùng nếu có */}
+      {user && <p>Chào, {user.name}!</p>}
+
       {/* Form thêm/sửa */}
       <form onSubmit={handleSubmit} className="row mb-4">
         <div className="col">
           <select className="form-control" value={formData.MonHoc} onChange={e => setFormData({ ...formData, MonHoc: e.target.value })} required>
             <option value="">Chọn môn học</option>
             {monHocs.map(mon => (
-              <option key={mon.TenMon} value={mon.TenMon}>{mon.TenMon}</option>
+              <option key={mon.MaMonHoc} value={mon.MaMonHoc}>{mon.TenMon}</option>
             ))}
           </select>
         </div>
@@ -118,7 +123,10 @@ const TKB = () => {
                   <td key={thu}>
                     {mon ? (
                       <>
-                        <strong>{mon.MonHoc}</strong>
+                        <strong>
+                          {(monHocs.find(m => m.MaMonHoc === mon.MonHoc) || {}).TenMon || mon.MonHoc}
+                        </strong>
+
                         <div className="mt-1">
                           <button onClick={() => handleEditMon(mon)} className="btn btn-sm btn-info mr-1">Sửa</button>
                           <button onClick={() => handleDeleteMon(mon.IDTKB)} className="btn btn-sm btn-danger">Xóa</button>

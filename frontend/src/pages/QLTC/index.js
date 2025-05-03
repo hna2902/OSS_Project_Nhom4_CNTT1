@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Layout from '../../components/Layout';
+import { UserContext } from '../../contexts/UserContext'; // Import UserContext
 
 const QLTC = () => {
   const [tinchi, settinchi] = useState([]);
@@ -10,9 +11,15 @@ const QLTC = () => {
   const [formData, setFormData] = useState({ MaMon: "", TongTinChi: "", SoChiDat: "", SoChiNo: "" });
   const [refresh, setRefresh] = useState(false);
   const [editingId, setEditingId] = useState(null); // ID tín chỉ đang sửa
+  
+  // Lấy thông tin người dùng từ context
+  const { user, fetchUser } = UserContext();
 
-  // Lấy dữ liệu
   useEffect(() => {
+    // Lấy thông tin người dùng khi component mount
+    fetchUser();
+
+    // Lấy dữ liệu tín chỉ và môn học
     axios.get('http://localhost:8000/api/tinchi/', { withCredentials: true })
       .then(res => settinchi(res.data))
       .catch(err => console.error("Lỗi khi lấy dữ liệu tín chỉ:", err));
@@ -20,7 +27,7 @@ const QLTC = () => {
     axios.get('http://localhost:8000/api/monhoc/', { withCredentials: true })
       .then(res => setmonhoc(res.data))
       .catch(err => console.error("Lỗi khi lấy dữ liệu môn học:", err));
-  }, [refresh]);
+  }, [refresh, fetchUser]);
 
   // Submit form
   const handleSubmit = (e) => {
@@ -55,19 +62,15 @@ const QLTC = () => {
   };
 
   // Chọn để chỉnh sửa
- // Chọn để chỉnh sửa
- const handleEditTinChi = (tc) => {
-  setFormData({
-    MaMon: tc.MaMon || "", // sửa ở đây
-    TongTinChi: tc.TongTinChi,
-    SoChiDat: tc.SoChiDat,
-    SoChiNo: tc.SoChiNo,
-  });
-  setEditingId(tc.IDTinChi);
-};
-
-
-
+  const handleEditTinChi = (tc) => {
+    setFormData({
+      MaMon: tc.MaMon || "",
+      TongTinChi: tc.TongTinChi,
+      SoChiDat: tc.SoChiDat,
+      SoChiNo: tc.SoChiNo,
+    });
+    setEditingId(tc.IDTinChi);
+  };
 
   // Huỷ chỉnh sửa
   const handleCancelEdit = () => {
@@ -151,7 +154,7 @@ const QLTC = () => {
           {tinchi.length > 0 ? (
             tinchi.map((tc) => (
               <tr key={tc.IDTinChi}>
-                <td>{tc.TenMon}</td>
+                <td>{monhoc.find(mon => mon.MaMonHoc === tc.MaMon)?.TenMon || "Không rõ"}</td>
                 <td>{tc.TongTinChi}</td>
                 <td>{tc.SoChiDat}</td>
                 <td>{tc.SoChiNo}</td>

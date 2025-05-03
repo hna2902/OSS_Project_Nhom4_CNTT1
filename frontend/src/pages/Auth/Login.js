@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../contexts/UserContext';  // Import UserContext
 
 const Login = () => {
   const [taiKhoan, setTaiKhoan] = useState('');
@@ -8,29 +9,36 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
+  // Lấy setUser từ context
+  const { setUser } = useContext(UserContext);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await axios.post('http://localhost:8000/api/login/', {
         tai_khoan: taiKhoan,
         mat_khau: matKhau,
       }, {
-        withCredentials: true,  // <<< Thêm dòng này để gửi & nhận cookie
+        withCredentials: true,  // Để gửi & nhận cookie
       });
-
+  
       if (response.status === 200) {
-        // Không cần lưu user vào localStorage nữa nếu bạn dùng cookie
-        // Nếu muốn lưu lại user info cho tiện thì vẫn có thể
+        // Lưu thông tin người dùng vào localStorage
         localStorage.setItem('user', JSON.stringify(response.data.user_info));
-
-        navigate('/');  // Điều hướng về trang chủ sau khi đăng nhập thành công
+  
+        // Cập nhật user vào context
+        setUser(response.data.user_info);
+  
+        // Chuyển hướng về trang chủ sau khi đăng nhập thành công
+        navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage('Tài khoản hoặc mật khẩu không đúng!');
     }
   };
+  
 
   return (
     <div className="login-container">

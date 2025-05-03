@@ -61,7 +61,7 @@ class ThongTinNguoiDungViewSet(viewsets.ViewSet):
         save_dir = os.path.join(settings.BASE_DIR, 'StudyManager', 'static', 'img')
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, filename)
-        avatar_url = f"/static/img/{filename}"
+        avatar_url = request.build_absolute_uri(f"/static/img/{filename}")
 
         with open(save_path, 'wb+') as f:
             for chunk in avatar_file.chunks():

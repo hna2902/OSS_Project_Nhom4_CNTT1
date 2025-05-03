@@ -1,22 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axios'; // Dùng axios cấu hình sẵn
+import { UserContext } from '../contexts/UserContext';
 
 const Logout = () => {
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext); // 👉 Thêm dòng này
 
   useEffect(() => {
     const logout = async () => {
       try {
         // Gọi API backend để xóa session
-        await axios.post('http://localhost:8000/api/logout/', {}, {
-          withCredentials: true, // Gửi cookie để logout đúng session
-        });
+        await axios.post('/api/logout/', {}); // Không cần localhost ở đây
 
-        // Xóa user ở localStorage
+        // Xóa localStorage + context
         localStorage.removeItem('user');
+        setUser(null); // 👉 Cập nhật context
 
-        // Chuyển hướng về trang đăng nhập
+        // Chuyển hướng về login
         navigate('/login');
       } catch (error) {
         console.error('Logout error:', error);
@@ -24,7 +25,7 @@ const Logout = () => {
     };
 
     logout();
-  }, [navigate]);
+  }, [navigate, setUser]);
 
   return (
     <div className="logout-container">
