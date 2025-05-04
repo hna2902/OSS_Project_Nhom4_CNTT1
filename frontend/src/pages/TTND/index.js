@@ -1,16 +1,23 @@
-import React, { useState, useEffect, useContext } from 'react';
-import Layout from '../../components/Layout'; // Đảm bảo import Layout
+import React, { useState, useContext } from 'react';
+import Layout from '../../components/Layout';
 import axios from '../../utils/axios';
-import { UserContext } from '../../contexts/UserContext'; // Import UserContext
+import { UserContext } from '../../contexts/UserContext';
 
-const UserInfo = ({ onAvatarUpdate }) => { 
+const UserInfo = ({ onAvatarUpdate }) => {
   const { user, setUser, loadingUser } = useContext(UserContext);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isPasswordChangeMode, setIsPasswordChangeMode] = useState(false);
   const [error, setError] = useState(null);
-
   const [formErrors, setFormErrors] = useState({
     SDT: '',
-    Email: ''
+    Email: '',
+    oldPassword: '',
+    newPassword: ''
+  });
+
+  const [passwords, setPasswords] = useState({
+    oldPassword: '',
+    newPassword: '',
   });
 
   if (loadingUser) {
@@ -30,55 +37,45 @@ const UserInfo = ({ onAvatarUpdate }) => {
         SDT: '',
         Email: ''
       };
-  
-      // Kiểm tra SDT nếu có nhập vào
+
       if (user.SDT && !phonePattern.test(user.SDT)) {
         newErrors.SDT = 'Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng.';
         hasError = true;
       }
-  
-      // Kiểm tra Email nếu có nhập vào  
+
       if (user.Email && !emailPattern.test(user.Email)) {
         newErrors.Email = 'Email không hợp lệ. Vui lòng nhập đúng định dạng.';
         hasError = true;
       }
-  
-      // Cập nhật state errors
+
       setFormErrors(newErrors);
-      
-      // Nếu có lỗi thì dừng lại
+
       if (hasError) {
         return;
       }
-  
-      // Kiểm tra xem _id có tồn tại trong user không
+
       if (!user._id) {
         setError("Không tìm thấy ID người dùng.");
         return;
       }
-  
+
       try {
-        // Gọi API để cập nhật thông tin người dùng
         const res = await axios.patch(`/api/thongtinnguoidung/${user._id}/update_user_info/`, {
           Ten: user.Ten,
           SDT: user.SDT,
           Email: user.Email,
         });
-  
-        // Kiểm tra phản hồi từ API PATCH
+
         if (res.status === 200) {
-          // Sau khi cập nhật thành công, lấy lại thông tin người dùng mới nhất từ API
           const updatedUser = await axios.get(`/api/thongtinnguoidung/${user._id}/`);
           setUser(prev => ({
             ...prev,
             ...updatedUser.data
           }));
 
-  
-          // Nếu có LocalStorage, xóa nó và lưu lại thông tin mới
           localStorage.removeItem('user');
           localStorage.setItem('user', JSON.stringify(updatedUser.data));
-  
+
           setIsEditMode(false);
         } else {
           setError("Không thể cập nhật thông tin người dùng.");
@@ -91,8 +88,7 @@ const UserInfo = ({ onAvatarUpdate }) => {
       setIsEditMode(true);
     }
   };
-  
-  
+
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -117,11 +113,37 @@ const UserInfo = ({ onAvatarUpdate }) => {
     }
   };
 
+  const handlePasswordChange = async () => {
+    const { oldPassword, newPassword } = passwords;
+
+    if (!oldPassword || !newPassword) {
+      setError("Vui lòng nhập mật khẩu cũ và mật khẩu mới.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(`/api/thongtinnguoidung/${user._id}/change_password/`, {
+        old_password: oldPassword,
+        new_password: newPassword,
+      });
+
+      if (res.status === 200) {
+        setIsPasswordChangeMode(false);
+        setPasswords({ oldPassword: '', newPassword: '' });
+        alert("Đổi mật khẩu thành công!");
+      } else {
+        setError(res.data.error || "Không thể đổi mật khẩu");
+      }
+    } catch (err) {
+      console.error('Lỗi khi đổi mật khẩu:', err);
+      setError(err.response?.data?.error || 'Không thể đổi mật khẩu');
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUser(prev => ({ ...prev, [name]: value }));
-    
-    // Xóa lỗi khi người dùng đang sửa trường này
+
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -216,9 +238,55 @@ const UserInfo = ({ onAvatarUpdate }) => {
               </div>
 
               <div className="text-center mt-4">
+                {isPasswordChangeMode ? (
+                  <div>
+                    <h3>Đổi mật khẩu</h3>
+                    <div className="mb-3">
+                      <label className="form-label">Mật khẩu cũ</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        value={passwords.oldPassword}
+                        onChange={(e) => setPasswords({ ...passwords, oldPassword: e.target.value })}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Mật khẩu mới</label>
+                      <input
+                        type="password"
+                        className="form-control"
+                        value={passwords.newPassword}
+                        onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-success"
+                      onClick={handlePasswordChange}
+                    >
+                      Đổi mật khẩu
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary ms-2"
+                      onClick={() => setIsPasswordChangeMode(false)}
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-warning"
+                    onClick={() => setIsPasswordChangeMode(true)}
+                  >
+                    Thay đổi mật khẩu
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn btn-primary mt-2"
                   onClick={handleEditInfo}
                 >
                   {isEditMode ? 'Lưu thông tin' : 'Chỉnh sửa thông tin'}

@@ -88,7 +88,18 @@ const TKB = () => {
     setEditId(tkb.IDTKB);
     setShowModal(true);
   };
-
+  const handleDeleteAll = () => {
+    if (window.confirm("Bạn có chắc muốn xóa toàn bộ thời khóa biểu?")) {
+      axios.delete("/api/thoikhoabieu/delete_all/")
+        .then(res => {
+          alert(res.data.message);
+          setRefresh(prev => !prev); // reload lại dữ liệu nếu có dùng useEffect
+        })
+        .catch(err => {
+          alert("Xóa thất bại: " + (err.response?.data?.error || "Lỗi không xác định"));
+        });
+    }
+  };
   return (
     <Layout>
       <h2 className="mb-4">Thời Khóa Biểu</h2>
@@ -97,6 +108,9 @@ const TKB = () => {
       <button className="btn btn-success mb-3" onClick={() => setShowModal(true)}>
         Thêm mới
       </button>
+      <button className="btn btn-danger mb-3 ms-2" onClick={handleDeleteAll}>
+  Xóa toàn bộ
+</button>
 
       {/* Modal */}
       {showModal && (

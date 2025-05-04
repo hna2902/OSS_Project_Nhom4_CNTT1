@@ -125,13 +125,3 @@
   width: 100%;
 }
 
-/* Specific input types */
-.emailInput {
-  composes: formInput;
-  /* Additional email-specific styles */
-}
-
-.passwordInput {
-  composes: formInput;
-  /* Additional password-specific styles */
-}

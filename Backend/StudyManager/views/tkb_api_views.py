@@ -93,3 +93,13 @@ class ThoiKhoaBieuViewSet(viewsets.ViewSet):
             return Response({"error": "Không tìm thấy môn học hoặc không có quyền xóa."}, status=404)
 
         return Response({"message": "Môn học đã được xóa khỏi thời khóa biểu!"})
+
+        
+    @action(detail=False, methods=['delete'], url_path='delete_all')
+    def delete_all_schedule(self, request):
+        user_id = request.session.get("user_id")
+        if not user_id:
+            return Response({"error": "Bạn chưa đăng nhập!"}, status=401)
+
+        result = db.ThoiKhoaBieu.delete_many({"MaNguoiDung": user_id})
+        return Response({"message": f"Đã xóa {result.deleted_count} dòng thời khóa biểu."})
