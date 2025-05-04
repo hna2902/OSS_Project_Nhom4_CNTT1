@@ -1,4 +1,3 @@
-// src/components/Header.js
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../contexts/UserContext';
@@ -38,7 +37,10 @@ const Header = () => {
             <button className="btn btn-link" onClick={handleLogout}>Đăng xuất</button>
           </>
         ) : (
-          <Link className="btn btn-link" to="/login">Đăng nhập</Link>
+          <>
+            <Link className="btn btn-link" to="/login">Đăng nhập</Link>
+            <Link className="btn btn-link ms-2" to="/register">Đăng ký</Link> {/* ✅ Thêm link đăng ký */}
+          </>
         )}
       </div>
     </header>

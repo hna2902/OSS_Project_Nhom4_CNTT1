@@ -8,8 +8,7 @@ import axios from 'axios';
 import { UserContext } from '../../contexts/UserContext'; // Import UserContext
 
 function VCL() {
-  // Lấy thông tin người dùng từ context
-  const { user, setUser, loadingUser } = useContext(UserContext); // Sử dụng useContext để lấy thông tin người dùng từ context
+  const { user, setUser, loadingUser } = useContext(UserContext); // Lấy thông tin người dùng từ context
 
   const [monhoc, setMonhoc] = useState([]);
   const [vieccanlam, setViecCanLam] = useState([]);
@@ -64,7 +63,6 @@ function VCL() {
       const modal = bootstrap.Modal.getInstance(modalElement);
       if (modal) modal.hide();
     }
-    // Xử lý phần bị tối màn hình
     document.body.classList.remove('modal-open');
     const backdrop = document.querySelector('.modal-backdrop');
     if (backdrop) backdrop.remove();
@@ -98,7 +96,7 @@ function VCL() {
     try {
       await axios.delete(`http://localhost:8000/api/vieccanlam/${maViec}/`, { withCredentials: true });
       await fetchData();
-      closeModalManually();  // Đề phòng backdrop còn tồn tại
+      closeModalManually();
     } catch (error) {
       console.error('Error:', error);
       setError(error.response?.data?.detail || error.message);
@@ -143,23 +141,25 @@ function VCL() {
     return new Date(dateString).toLocaleDateString('vi-VN', options);
   };
 
-  if (isLoading) return <div className="text-center my-5">Đang tải...</div>;
+  if (isLoading) return <div className="text-center my-5"><div className="spinner-border" role="status"><span className="visually-hidden">Đang tải...</span></div></div>;
   if (error) return <div className="alert alert-danger">Lỗi: {error}</div>;
 
   return (
     <Layout>
       <div className="container py-4">
-        <h1 className="mb-4">Danh sách việc cần làm</h1>
-        <div className="card">
+        <h1 className="mb-4 text-center">Danh sách việc cần làm</h1>
+        <button type="button" className="btn btn-success" onClick={handleOpenAddModal}>
+                <i className="bi bi-plus-circle me-2"></i>Thêm Việc
+              </button>
+        <div className="card shadow-sm">
+          
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="card-title mb-0">Danh sách công việc</h5>
-              <button type="button" className="btn btn-success" onClick={handleOpenAddModal}>
-                <i className="bi bi-plus-circle me-2"></i>Thêm Việc
-              </button>
+              
             </div>
             <div className="table-responsive">
-              <table className="table table-hover">
+              <table className="table table-hover table-striped">
                 <thead className="table-light">
                   <tr>
                     <th>Tên môn</th>
@@ -177,16 +177,17 @@ function VCL() {
                         <td>{viec.NhacNho}</td>
                         <td>{viec.GhiChu}</td>
                         <td>{formatDate(viec.ThoiHan)}</td>
-                        <td>
-                          <div className="d-flex gap-2">
+                        <td className="align-middle">
+                          <div className="d-flex justify-content-center gap-2">
                             <button className="btn btn-sm btn-warning" onClick={() => handleEditViec(viec)}>
-                              <i className="bi bi-pencil"></i>
+                              <i className="bi bi-pencil"></i> Sửa
                             </button>
                             <button className="btn btn-sm btn-danger" onClick={() => handleDeleteViec(viec.MaViec)}>
-                              <i className="bi bi-trash"></i>
+                              <i className="bi bi-trash"></i> Xóa
                             </button>
                           </div>
                         </td>
+
                       </tr>
                     ))
                   ) : (

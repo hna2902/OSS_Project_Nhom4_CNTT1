@@ -4,7 +4,7 @@ import axios from '../../utils/axios';
 import { UserContext } from "../../contexts/UserContext";
 
 const KQHT = () => {
-  const { user, loadingUser } = useContext(UserContext);  // Sử dụng context người dùng
+  const { user, loadingUser } = useContext(UserContext);
   const [ketqua, setKetqua] = useState([]);
   const [monHocList, setMonHocList] = useState([]);
   const [formData, setFormData] = useState({
@@ -15,13 +15,14 @@ const KQHT = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentKQ, setCurrentKQ] = useState(null);
   const [message, setMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (user) { // Đảm bảo rằng user đã được tải thành công
+    if (user) {
       fetchKetQua();
       fetchMonHocList();
     }
-  }, [user]);  // Chỉ gọi lại khi user thay đổi
+  }, [user]);
 
   const fetchKetQua = () => {
     axios.get("/api/ketqua/")
@@ -39,7 +40,6 @@ const KQHT = () => {
     e.preventDefault();
     const { DiemGiuaKy, DiemCuoiKy } = formData;
 
-    // Kiểm tra tính hợp lệ của điểm
     if (DiemGiuaKy < 0 || DiemGiuaKy > 10 || DiemCuoiKy < 0 || DiemCuoiKy > 10) {
       setMessage("Điểm phải nằm trong khoảng từ 0 đến 10.");
       return;
@@ -58,12 +58,9 @@ const KQHT = () => {
     apiCall
       .then(() => {
         fetchKetQua();
-        setFormData({
-          MaMonHoc: "",
-          DiemGiuaKy: "",
-          DiemCuoiKy: "",
-        });
+        setFormData({ MaMonHoc: "", DiemGiuaKy: "", DiemCuoiKy: "" });
         setMessage(isEditing ? "Cập nhật kết quả thành công!" : "Thêm kết quả thành công!");
+        setShowModal(false);
       })
       .catch(err => {
         console.error("Error submitting form:", err);
@@ -79,6 +76,14 @@ const KQHT = () => {
     });
     setCurrentKQ(kq);
     setIsEditing(true);
+    setShowModal(true);
+  };
+
+  const handleAddNew = () => {
+    setFormData({ MaMonHoc: "", DiemGiuaKy: "", DiemCuoiKy: "" });
+    setIsEditing(false);
+    setCurrentKQ(null);
+    setShowModal(true);
   };
 
   const handleDelete = (id) => {
@@ -95,9 +100,7 @@ const KQHT = () => {
     }
   };
 
-  if (loadingUser) {
-    return <div>Loading...</div>;
-  }
+  if (loadingUser) return <div>Loading...</div>;
 
   return (
     <Layout>
@@ -105,26 +108,43 @@ const KQHT = () => {
 
       {message && <div className="alert alert-info">{message}</div>}
 
-      {/* Form thêm/sửa kết quả học tập */}
-      <form onSubmit={handleSubmit} className="row mb-4">
-        <div className="col">
-          <select className="form-control" value={formData.MaMonHoc} onChange={e => setFormData({ ...formData, MaMonHoc: e.target.value })} required>
-            <option value="">Chọn môn học</option>
-            {monHocList.map(mon => (
-              <option key={mon.MaMonHoc} value={mon.MaMonHoc}>{mon.TenMonHoc}</option>
-            ))}
-          </select>
+      <button className="btn btn-primary mb-3" onClick={handleAddNew}>Thêm Kết Quả</button>
+
+      {/* Modal popup */}
+      {showModal && (
+        <div className="modal d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-lg" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{isEditing ? "Cập Nhật Kết Quả" : "Thêm Kết Quả"}</h5>
+                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <div className="modal-body row">
+                  <div className="col-12 mb-2">
+                    <select className="form-control" value={formData.MaMonHoc} onChange={e => setFormData({ ...formData, MaMonHoc: e.target.value })} required>
+                      <option value="">Chọn môn học</option>
+                      {monHocList.map(mon => (
+                        <option key={mon.MaMonHoc} value={mon.MaMonHoc}>{mon.TenMon}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-md-6 mb-2">
+                    <input type="number" step="0.1" className="form-control" placeholder="Điểm giữa kỳ" value={formData.DiemGiuaKy} onChange={e => setFormData({ ...formData, DiemGiuaKy: e.target.value })} required />
+                  </div>
+                  <div className="col-md-6 mb-2">
+                    <input type="number" step="0.1" className="form-control" placeholder="Điểm cuối kỳ" value={formData.DiemCuoiKy} onChange={e => setFormData({ ...formData, DiemCuoiKy: e.target.value })} required />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Hủy</button>
+                  <button type="submit" className="btn btn-success">{isEditing ? "Cập Nhật" : "Thêm"}</button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
-        <div className="col">
-          <input type="number" name="DiemGiuaKy" step="0.1" value={formData.DiemGiuaKy} onChange={e => setFormData({ ...formData, DiemGiuaKy: e.target.value })} className="form-control" placeholder="Điểm giữa kỳ" required />
-        </div>
-        <div className="col">
-          <input type="number" name="DiemCuoiKy" step="0.1" value={formData.DiemCuoiKy} onChange={e => setFormData({ ...formData, DiemCuoiKy: e.target.value })} className="form-control" placeholder="Điểm cuối kỳ" required />
-        </div>
-        <div className="col">
-          <button type="submit" className="btn btn-success">{isEditing ? "Cập Nhật" : "Thêm"}</button>
-        </div>
-      </form>
+      )}
 
       {/* Bảng kết quả học tập */}
       <table className="table table-bordered table-striped">
@@ -140,7 +160,7 @@ const KQHT = () => {
         <tbody>
           {ketqua.length > 0 ? ketqua.map((kq, index) => (
             <tr key={index}>
-              <td>{kq.TenMonHoc}</td>
+              <td>{monHocList.find(mon => mon.MaMonHoc === kq.MaMonHoc)?.TenMon || "(Không tìm thấy)"}</td>
               <td>{kq.DiemGiuaKy}</td>
               <td>{kq.DiemCuoiKy}</td>
               <td>{kq.DiemTrungBinh}</td>

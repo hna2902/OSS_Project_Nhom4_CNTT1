@@ -1,35 +1,30 @@
 import React, { useState, useEffect, useContext } from "react";
 import Layout from '../../components/Layout';
-import axios from '../../utils/axios'; // Đảm bảo bạn đã cấu hình axios đúng
+import axios from '../../utils/axios';
 import { UserContext } from "../../contexts/UserContext";
 
 const QLMH = () => {
-  const { user, loadingUser } = useContext(UserContext); // Lấy thông tin người dùng từ UserContext
+  const { user, loadingUser } = useContext(UserContext);
   const [monhocs, setMonhocs] = useState([]);
   const [form, setForm] = useState({
     TenMon: "",
     GiangVien: "",
     ThoiGianBatDau: "",
     ThoiGianKetThuc: "",
-    SoTinChi: ""
   });
-  const [editMonHoc, setEditMonHoc] = useState(null); // State để lưu môn học cần sửa
+  const [editMonHoc, setEditMonHoc] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (user) {
-      // Lấy danh sách môn học khi người dùng đã được tải
       fetchMonHoc();
     }
-  }, [user]); // Gọi lại khi user thay đổi
+  }, [user]);
 
   const fetchMonHoc = () => {
     axios.get("/api/monhoc/", { withCredentials: true })
-      .then(res => {
-        setMonhocs(res.data);
-      })
-      .catch(err => {
-        console.error("API Error:", err);
-      });
+      .then(res => setMonhocs(res.data))
+      .catch(err => console.error("API Error:", err));
   };
 
   const handleInput = e => {
@@ -40,64 +35,54 @@ const QLMH = () => {
   const handleSubmit = e => {
     e.preventDefault();
     if (editMonHoc) {
-      // Sửa môn học
       axios.put(`/api/monhoc/${editMonHoc.MaMonHoc}/`, form, { withCredentials: true })
         .then(() => {
           fetchMonHoc();
-          setForm({ TenMon: "", GiangVien: "", ThoiGianBatDau: "", ThoiGianKetThuc: "", SoTinChi: "" });
-          setEditMonHoc(null); // Reset khi sửa thành công
+          resetForm();
         })
-        .catch(err => {
-          console.error("Error submitting form:", err);
-        });
+        .catch(err => console.error("Error submitting form:", err));
     } else {
-      // Thêm môn học
       axios.post("/api/monhoc/", form, { withCredentials: true })
         .then(() => {
           fetchMonHoc();
-          setForm({ TenMon: "", GiangVien: "", ThoiGianBatDau: "", ThoiGianKetThuc: "", SoTinChi: "" });
+          resetForm();
         })
-        .catch(err => {
-          console.error("Error submitting form:", err);
-        });
+        .catch(err => console.error("Error submitting form:", err));
     }
   };
 
   const handleDelete = id => {
     axios.delete(`/api/monhoc/${id}/`, { withCredentials: true })
       .then(() => fetchMonHoc())
-      .catch(err => {
-        console.error("Error deleting monhoc:", err);
-      });
+      .catch(err => console.error("Error deleting monhoc:", err));
   };
 
   const handleEdit = monHoc => {
-    setEditMonHoc(monHoc); // Đặt môn học cần sửa vào state
+    setEditMonHoc(monHoc);
     setForm({
       TenMon: monHoc.TenMon,
       GiangVien: monHoc.GiangVien,
       ThoiGianBatDau: monHoc.ThoiGianBatDau,
       ThoiGianKetThuc: monHoc.ThoiGianKetThuc,
-      SoTinChi: monHoc.SoTinChi
     });
+    setShowModal(true);
   };
 
-  if (loadingUser) {
-    return <div>Loading...</div>;
-  }
+  const resetForm = () => {
+    setForm({ TenMon: "", GiangVien: "", ThoiGianBatDau: "", ThoiGianKetThuc: "" });
+    setEditMonHoc(null);
+    setShowModal(false);
+  };
+
+  if (loadingUser) return <div>Loading...</div>;
 
   return (
     <Layout>
       <h2>Danh sách Môn Học</h2>
 
-      <form onSubmit={handleSubmit} className="mb-4">
-        <input type="text" name="TenMon" placeholder="Tên môn" value={form.TenMon} onChange={handleInput} required />
-        <input type="text" name="GiangVien" placeholder="Giảng viên" value={form.GiangVien} onChange={handleInput} required />
-        <input type="date" name="ThoiGianBatDau" value={form.ThoiGianBatDau} onChange={handleInput} required />
-        <input type="date" name="ThoiGianKetThuc" value={form.ThoiGianKetThuc} onChange={handleInput} required />
-        <input type="number" name="SoTinChi" placeholder="Số tín chỉ" value={form.SoTinChi} onChange={handleInput} required min="1" />
-        <button type="submit" className="btn btn-primary">{editMonHoc ? "Cập Nhật" : "Thêm"}</button>
-      </form>
+      <button className="btn btn-success mb-3" onClick={() => setShowModal(true)}>
+        Thêm Môn Học
+      </button>
 
       <table className="table table-bordered table-striped">
         <thead className="table-success">
@@ -107,7 +92,6 @@ const QLMH = () => {
             <th>Giảng Viên</th>
             <th>Thời Gian Bắt Đầu</th>
             <th>Thời Gian Kết Thúc</th>
-            <th>Số Tín Chỉ</th>
             <th>Thao Tác</th>
           </tr>
         </thead>
@@ -119,19 +103,44 @@ const QLMH = () => {
               <td>{mh.GiangVien}</td>
               <td>{new Date(mh.ThoiGianBatDau).toLocaleDateString()}</td>
               <td>{new Date(mh.ThoiGianKetThuc).toLocaleDateString()}</td>
-              <td>{mh.SoTinChi}</td>
               <td>
-                <button className="btn btn-warning btn-sm" onClick={() => handleEdit(mh)}>
-                  Sửa
-                </button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(mh.MaMonHoc)}>
-                  Xoá
-                </button>
+                <button className="btn btn-warning btn-sm me-1" onClick={() => handleEdit(mh)}>Sửa</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(mh.MaMonHoc)}>Xoá</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* Modal Form */}
+      {showModal && (
+        <div className="modal show fade d-block" tabIndex="-1" role="dialog">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+
+              <div className="modal-header">
+                <h5 className="modal-title">{editMonHoc ? "Cập Nhật Môn Học" : "Thêm Môn Học"}</h5>
+                <button type="button" className="btn-close" onClick={resetForm}></button>
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                <div className="modal-body">
+                  <input type="text" name="TenMon" placeholder="Tên môn" value={form.TenMon} onChange={handleInput} required className="form-control mb-2" />
+                  <input type="text" name="GiangVien" placeholder="Giảng viên" value={form.GiangVien} onChange={handleInput} required className="form-control mb-2" />
+                  <input type="date" name="ThoiGianBatDau" value={form.ThoiGianBatDau} onChange={handleInput} required className="form-control mb-2" />
+                  <input type="date" name="ThoiGianKetThuc" value={form.ThoiGianKetThuc} onChange={handleInput} required className="form-control mb-2" />
+                </div>
+
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={resetForm}>Đóng</button>
+                  <button type="submit" className="btn btn-primary">{editMonHoc ? "Cập Nhật" : "Thêm"}</button>
+                </div>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

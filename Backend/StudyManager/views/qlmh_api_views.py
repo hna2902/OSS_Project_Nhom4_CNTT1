@@ -30,7 +30,6 @@ class QLMonHocViewSet(viewsets.ViewSet):
         giang_vien = data.get("GiangVien")
         thoi_gian_bat_dau = data.get("ThoiGianBatDau")
         thoi_gian_ket_thuc = data.get("ThoiGianKetThuc")
-        so_tin_chi = data.get("SoTinChi")
 
         ma_mon = get_next_id("MAMON", "MAMON")
 
@@ -41,7 +40,6 @@ class QLMonHocViewSet(viewsets.ViewSet):
             "GiangVien": giang_vien,
             "ThoiGianBatDau": thoi_gian_bat_dau,
             "ThoiGianKetThuc": thoi_gian_ket_thuc,
-            "SoTinChi": int(so_tin_chi),
             "MaNguoiDung": user_id,
         })
 
@@ -55,7 +53,6 @@ class QLMonHocViewSet(viewsets.ViewSet):
             return Response({"error": "Không tìm thấy môn học hoặc không có quyền sửa."}, status=404)
 
         ten_mon = request.data.get("TenMon")
-        so_tin_chi = request.data.get("SoTinChi")
         thoi_gian_bat_dau = request.data.get("ThoiGianBatDau")
         thoi_gian_ket_thuc = request.data.get("ThoiGianKetThuc")
         giang_vien = request.data.get("GiangVien")
@@ -63,8 +60,6 @@ class QLMonHocViewSet(viewsets.ViewSet):
         update_data = {}
         if ten_mon:
             update_data["TenMon"] = ten_mon
-        if so_tin_chi:
-            update_data["SoTinChi"] = int(so_tin_chi)
         if thoi_gian_bat_dau and thoi_gian_ket_thuc:
             if thoi_gian_bat_dau >= thoi_gian_ket_thuc:
                 return Response({"error": "Thời gian bắt đầu phải trước thời gian kết thúc!"}, status=400)

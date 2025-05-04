@@ -1,10 +1,10 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './contexts/UserContext'; // ✅ Import provider
 
 import Home from './pages/Home/Home';
 import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register'; // ✅ Import trang đăng ký
 import QLMH from './pages/QLMH/index';
 import KQHT from './pages/KQHT';
 import TKB from './pages/TKB';
@@ -19,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} /> {/* ✅ Thêm route đăng ký */}
           <Route path="/monhoc" element={<QLMH />} />
           <Route path="/kqht" element={<KQHT />} />
           <Route path="/thoikhoabieu" element={<TKB />} />

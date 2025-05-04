@@ -68,5 +68,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
      path('api/login/', TaiKhoanViewSet.as_view({'post': 'login'})),  # Đảm bảo đăng ký đúng phương thức
      path('api/logout/', TaiKhoanViewSet.as_view({'post': 'logout'})),
-
+    path('api/register/', TaiKhoanViewSet.as_view({'post': 'create'}), name='register'),
 ]

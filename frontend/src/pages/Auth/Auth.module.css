@@ -1,0 +1,137 @@
+/* Auth.module.css */
+
+/* Layout styles */
+.pageContainer {
+  font-family: 'Arial', sans-serif;
+  background: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.contentWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.svgWrapper {
+  margin-right: 50px;
+}
+
+.svgImage {
+  width: 300px;
+  height: 300px;
+}
+
+/* Form styles */
+.authForm {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 400px;
+}
+
+.formTitle {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #3a5e77;
+}
+
+/* Input styles */
+.inputGroup {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.inputLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: #3a5e77;
+  font-weight: bold;
+}
+
+.formInput {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.formInput:focus {
+  border-color: #3a5e77;
+  outline: none;
+  box-shadow: 0 0 5px rgba(58, 94, 119, 0.3);
+}
+
+/* Button styles */
+.submitButton {
+  width: 100%;
+  padding: 12px;
+  background: #3a5e77;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.submitButton:hover {
+  background: #2c4a5e;
+}
+
+.submitButton:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Link styles */
+.authLink {
+  color: #3a5e77;
+  text-decoration: none;
+  margin-top: 15px;
+  display: inline-block;
+}
+
+.authLink:hover {
+  text-decoration: underline;
+}
+
+/* Error message */
+.errorText {
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Animation effects */
+.inputIndicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: #3a5e77;
+  transition: width 0.3s;
+}
+
+.inputGroup:focus-within .inputIndicator {
+  width: 100%;
+}
+
+/* Specific input types */
+.emailInput {
+  composes: formInput;
+  /* Additional email-specific styles */
+}
+
+.passwordInput {
+  composes: formInput;
+  /* Additional password-specific styles */
+}
