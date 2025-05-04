@@ -13,7 +13,7 @@ git status
 
 lệnh cập nhật lên git
 git add .
-git commit -"nội dung" (note lại update cái gì)
+git commit -m"nội dung" (note lại update cái gì)
 git push
 
 
