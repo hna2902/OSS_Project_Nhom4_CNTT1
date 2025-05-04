@@ -102,8 +102,8 @@ const TKB = () => {
   };
   return (
     <Layout>
-      <h2 className="mb-4">Thời Khóa Biểu</h2>
-      {user && <p>Chào, {user.name}!</p>}
+      <center><h2 className="mb-4">Thời Khóa Biểu</h2></center>
+      
 
       <button className="btn btn-success mb-3" onClick={() => setShowModal(true)}>
         Thêm mới

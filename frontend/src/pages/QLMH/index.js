@@ -78,7 +78,7 @@ const QLMH = () => {
 
   return (
     <Layout>
-      <h2>Danh sách Môn Học</h2>
+      <center><h2>Danh sách Môn Học</h2></center>
 
       <button className="btn btn-success mb-3" onClick={() => setShowModal(true)}>
         Thêm Môn Học

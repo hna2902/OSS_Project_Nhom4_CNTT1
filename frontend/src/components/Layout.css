@@ -138,3 +138,10 @@ table tbody tr:hover {
     border-radius: 10px;
     width: 400px;
 }
+.nav-link.active {
+    background-color: #054080; /* Blue background for the active link */
+    color: white; /* White text for better contrast */
+    font-weight: bold; /* Bold text */
+    border-radius: 5px; /* Optional: rounded corners for a smoother look */
+    padding: 8px 12px; /* Optional: adjust padding for better appearance */
+  }

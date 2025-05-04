@@ -1,65 +1,54 @@
-/* Auth.module.css */
-
-/* Layout styles */
-.pageContainer {
-  font-family: 'Arial', sans-serif;
-  background: #f5f5f5;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.contentWrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Overlay styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-}
-
-.svgWrapper {
-  margin-right: 50px;
-}
-
-.svgImage {
-  width: 300px;
-  height: 300px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 /* Form styles */
 .authForm {
   background: white;
-  padding: 40px;
+  padding: 20px; /* Giảm padding để thu nhỏ form */
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  width: 400px;
+  width: 320px; /* Giảm width để form nhỏ hơn */
+  max-width: 90%;
 }
 
 .formTitle {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px; /* Giảm margin-bottom để tiết kiệm không gian */
   color: #3a5e77;
+  font-size: 1.5rem; /* Giảm font size của tiêu đề */
 }
 
 /* Input styles */
 .inputGroup {
-  margin-bottom: 20px;
+  margin-bottom: 15px; /* Giảm margin-bottom để các input gần nhau hơn */
   position: relative;
 }
 
 .inputLabel {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Giảm margin-bottom */
   color: #3a5e77;
   font-weight: bold;
+  font-size: 0.9rem; /* Giảm font size của label */
 }
 
 .formInput {
   width: 100%;
-  padding: 12px;
+  padding: 10px; /* Giảm padding để input nhỏ hơn */
   border: 1px solid #ddd;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 0.9rem; /* Giảm font size của input */
   transition: all 0.3s;
 }
 
@@ -72,12 +61,12 @@
 /* Button styles */
 .submitButton {
   width: 100%;
-  padding: 12px;
+  padding: 10px; /* Giảm padding để nút nhỏ hơn */
   background: #3a5e77;
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 0.9rem; /* Giảm font size của nút */
   cursor: pointer;
   transition: background 0.3s;
 }
@@ -95,8 +84,9 @@
 .authLink {
   color: #3a5e77;
   text-decoration: none;
-  margin-top: 15px;
+  margin-top: 10px; /* Giảm margin-top */
   display: inline-block;
+  font-size: 0.9rem; /* Giảm font size của link */
 }
 
 .authLink:hover {
@@ -107,7 +97,8 @@
 .errorText {
   color: #e74c3c;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px; /* Giảm margin-bottom */
+  font-size: 0.9rem; /* Giảm font size của lỗi */
 }
 
 /* Animation effects */
@@ -124,4 +115,3 @@
 .inputGroup:focus-within .inputIndicator {
   width: 100%;
 }
-

@@ -152,7 +152,7 @@ const UserInfo = ({ onAvatarUpdate }) => {
   return (
     <Layout>
       <div className="container mt-4">
-        <h2>Thông tin của bạn</h2>
+        <center><h2>Thông tin của bạn</h2></center>
         <div className="card p-4 shadow-sm">
           <div className="row">
             <div className="col-md-3 text-center">
@@ -237,9 +237,9 @@ const UserInfo = ({ onAvatarUpdate }) => {
                 </div>
               </div>
 
-              <div className="text-center mt-4">
+              <div className="d-flex justify-content-center mt-4 gap-3">
                 {isPasswordChangeMode ? (
-                  <div>
+                  <div className="w-100">
                     <h3>Đổi mật khẩu</h3>
                     <div className="mb-3">
                       <label className="form-label">Mật khẩu cũ</label>
@@ -261,36 +261,39 @@ const UserInfo = ({ onAvatarUpdate }) => {
                     </div>
                     <button
                       type="button"
-                      className="btn btn-success"
+                      className="btn btn-success me-2"
                       onClick={handlePasswordChange}
                     >
                       Đổi mật khẩu
                     </button>
                     <button
                       type="button"
-                      className="btn btn-secondary ms-2"
+                      className="btn btn-secondary"
                       onClick={() => setIsPasswordChangeMode(false)}
                     >
                       Hủy
                     </button>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    className="btn btn-warning"
-                    onClick={() => setIsPasswordChangeMode(true)}
-                  >
-                    Thay đổi mật khẩu
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-warning flex-fill"
+                      style={{ maxWidth: '200px' }}
+                      onClick={() => setIsPasswordChangeMode(true)}
+                    >
+                      Thay đổi mật khẩu
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary flex-fill"
+                      style={{ maxWidth: '200px' }}
+                      onClick={handleEditInfo}
+                    >
+                      {isEditMode ? 'Lưu thông tin' : 'Chỉnh sửa thông tin'}
+                    </button>
+                  </>
                 )}
-
-                <button
-                  type="button"
-                  className="btn btn-primary mt-2"
-                  onClick={handleEditInfo}
-                >
-                  {isEditMode ? 'Lưu thông tin' : 'Chỉnh sửa thông tin'}
-                </button>
               </div>
             </div>
           </div>

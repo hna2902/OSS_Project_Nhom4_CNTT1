@@ -180,7 +180,7 @@ function VCL() {
   return (
     <Layout>
       <div className="container py-4">
-        <h1 className="mb-4 text-center">Danh sách việc cần làm</h1>
+        <h2 className="mb-4 text-center">Danh sách việc cần làm</h2>
         <button type="button" className="btn btn-success" onClick={handleOpenAddModal}>
           <i className="bi bi-plus-circle me-2"></i>Thêm Việc
         </button>

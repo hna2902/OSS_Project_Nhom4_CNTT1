@@ -73,10 +73,10 @@ const QLTC = () => {
 
   return (
     <Layout>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Quản lý Tín Chỉ</h2>
+ 
+        <center><h2>Quản lý Tín Chỉ</h2></center>
         
-      </div>
+
       <button className="btn btn-primary" onClick={() => openModal()}>Thêm Tín Chỉ</button>
       <table className="table table-bordered table-striped">
         <thead className="table-primary">

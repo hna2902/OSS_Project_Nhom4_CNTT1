@@ -104,7 +104,7 @@ const KQHT = () => {
 
   return (
     <Layout>
-      <h2 className="mb-4">Kết Quả Học Tập</h2>
+      <center><h2>Kết Quả Học Tập</h2></center>
 
       {message && <div className="alert alert-info">{message}</div>}
 
