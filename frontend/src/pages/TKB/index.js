@@ -56,15 +56,16 @@ const TKB = () => {
     const request = isEditing
       ? axios.put(`/api/thoikhoabieu/${editId}/`, formData)
       : axios.post("/api/thoikhoabieu/", formData);
-
+  
     request
       .then(() => {
         resetForm();
-        setRefresh(prev => !prev);
         setShowModal(false);
+        window.location.reload(); // ✅ Reload trang sau khi thêm/cập nhật
       })
       .catch(err => alert(err.response?.data?.error || "Có lỗi xảy ra!"));
   };
+  
 
   const resetForm = () => {
     setFormData({ Thu: "", MonHoc: "", ThoiGianHoc: "" });

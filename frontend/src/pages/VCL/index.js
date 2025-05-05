@@ -81,10 +81,10 @@ function VCL() {
       } else {
         await axios.post('http://localhost:8000/api/vieccanlam/', newViec, { withCredentials: true });
       }
-      await fetchData();
-      setSelectedViec(null);
-      setFormData({ NhacNho: '', GhiChu: '', ThoiHan: '', MaMonHoc: '' });
-      closeModalManually();
+  
+      // Sau khi thêm xong, reload toàn bộ trang
+      window.location.reload();
+  
     } catch (error) {
       console.error('Error:', error);
       setError(error.response?.data?.detail || error.message);
@@ -92,6 +92,8 @@ function VCL() {
       setIsLoading(false);
     }
   };
+  
+  
 
   const handleDeleteViec = async (maViec) => {
     if (!window.confirm('Bạn có chắc muốn xóa việc này không?')) return;
