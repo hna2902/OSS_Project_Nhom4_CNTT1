@@ -34,6 +34,15 @@ const QLMH = () => {
 
   const handleSubmit = e => {
     e.preventDefault();
+    
+    const start = new Date(form.ThoiGianBatDau);
+    const end = new Date(form.ThoiGianKetThuc);
+  
+    if (start >= end) {
+      alert("Thời gian bắt đầu phải trước thời gian kết thúc!");
+      return;
+    }
+  
     if (editMonHoc) {
       axios.put(`/api/monhoc/${editMonHoc.MaMonHoc}/`, form, { withCredentials: true })
         .then(() => {
@@ -50,6 +59,7 @@ const QLMH = () => {
         .catch(err => console.error("Error submitting form:", err));
     }
   };
+  
 
   const handleDelete = id => {
     if (window.confirm("Bạn có chắc chắn muốn xóa môn học này?")) {
@@ -91,7 +101,6 @@ const QLMH = () => {
       <table className="table table-bordered table-striped">
         <thead className="table-success">
           <tr>
-            <th>Mã Môn</th>
             <th>Tên Môn</th>
             <th>Giảng Viên</th>
             <th>Thời Gian Bắt Đầu</th>
@@ -102,7 +111,6 @@ const QLMH = () => {
         <tbody>
           {monhocs.map(mh => (
             <tr key={mh.MaMonHoc}>
-              <td>{mh.MaMonHoc}</td>
               <td>{mh.TenMon}</td>
               <td>{mh.GiangVien}</td>
               <td>{new Date(mh.ThoiGianBatDau).toLocaleDateString()}</td>
