@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './contexts/UserContext'; // ✅ Import provider
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import "bootstrap-icons/font/bootstrap-icons.css";
 
 import Home from './pages/Home/Home';
 import Login from './pages/Auth/Login';

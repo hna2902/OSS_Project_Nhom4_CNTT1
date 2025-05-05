@@ -145,3 +145,56 @@ table tbody tr:hover {
     border-radius: 5px; /* Optional: rounded corners for a smoother look */
     padding: 8px 12px; /* Optional: adjust padding for better appearance */
   }
+
+  /* Layout wrapper giữ tổng thể flex + full height */
+.layout-wrapper {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Nội dung bên phải của layout */
+.main-content {
+    margin-left: 250px;
+    flex-grow: 1;
+    padding: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Vùng scroll khi nội dung dài */
+.content-scroll {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-bottom: 50px; /* tránh bị đụng footer hoặc nút */
+}
+
+/* Responsive cho layout khi sidebar chiếm toàn bộ chiều rộng */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+.header-custom {
+    background-color: #007bff;
+    color: white;
+    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  header {
+    width: 100%;
+    position: relative;
+    z-index: 1000;
+  }
+  
+  .header-custom .btn-link {
+    color: white;
+    text-decoration: none;
+  }
+  
+  .header-custom .btn-link:hover {
+    text-decoration: underline;
+  }
+  

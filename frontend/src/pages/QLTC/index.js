@@ -46,22 +46,31 @@ const QLTC = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (editingId) {
-      axios.put(`http://localhost:8000/api/tinchi/${editingId}/`, formData, { withCredentials: true })
-        .then(() => {
-          setRefresh(prev => !prev);
-          closeModal();
-        })
-        .catch(err => alert(err.response?.data?.error || "Cập nhật thất bại!"));
-    } else {
-      axios.post('http://localhost:8000/api/tinchi/', formData, { withCredentials: true })
-        .then(() => {
-          setRefresh(prev => !prev);
-          closeModal();
-        })
-        .catch(err => alert(err.response?.data?.error || "Thêm mới thất bại!"));
+  
+    const tongTC = parseInt(formData.TongTinChi, 10);
+    const soDat = parseInt(formData.SoChiDat, 10);
+    const soNo = parseInt(formData.SoChiNo, 10);
+  
+    if (soDat + soNo > tongTC) {
+      alert("Tổng Số chỉ đạt và Số chỉ nợ không được vượt quá Tổng tín chỉ!");
+      return;
     }
+  
+    const url = editingId
+      ? `http://localhost:8000/api/tinchi/${editingId}/`
+      : 'http://localhost:8000/api/tinchi/';
+    const method = editingId ? axios.put : axios.post;
+  
+    method(url, formData, { withCredentials: true })
+      .then(() => {
+        setRefresh(prev => !prev);
+        closeModal();
+      })
+      .catch(err => {
+        alert(err.response?.data?.error || (editingId ? "Cập nhật thất bại!" : "Thêm mới thất bại!"));
+      });
   };
+  
 
   const handleDelete = (id) => {
     if (window.confirm("Bạn có chắc muốn xóa tín chỉ này?")) {
@@ -77,7 +86,8 @@ const QLTC = () => {
         <center><h2>Quản lý Tín Chỉ</h2></center>
         
 
-      <button className="btn btn-primary" onClick={() => openModal()}>Thêm Tín Chỉ</button>
+      <button className="btn btn-success" onClick={() => openModal()}>
+      <i className="bi bi-plus-circle me-2"></i>Thêm Tín Chỉ</button>
       <table className="table table-bordered table-striped">
         <thead className="table-primary">
           <tr>
@@ -97,8 +107,8 @@ const QLTC = () => {
                 <td>{tc.SoChiDat}</td>
                 <td>{tc.SoChiNo}</td>
                 <td>
-                  <button className="btn btn-sm btn-warning me-2" onClick={() => openModal(tc)}>Sửa</button>
-                  <button className="btn btn-sm btn-danger" onClick={() => handleDelete(tc.IDTinChi)}>Xóa</button>
+                  <button className="btn btn-warning me-2" onClick={() => openModal(tc)}><i className="bi bi-pencil"></i> </button>
+                  <button className="btn btn-danger" onClick={() => handleDelete(tc.IDTinChi)}><i className="bi bi-trash"></i></button>
                 </td>
               </tr>
             ))
@@ -112,7 +122,16 @@ const QLTC = () => {
 
       {/* Modal Bootstrap đơn giản */}
       {showModal && (
-        <div className="modal show d-block" tabIndex="-1">
+        <div
+        className="modal show d-block"
+        tabIndex="-1"
+        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        onClick={(e) => {
+          if (e.target.classList.contains("modal")) {
+            closeModal();
+          }
+        }}
+      >
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <form onSubmit={handleSubmit}>

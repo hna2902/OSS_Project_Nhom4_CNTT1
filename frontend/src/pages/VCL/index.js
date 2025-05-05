@@ -241,14 +241,14 @@ function VCL() {
                             onClick={() => handleEditViec(viec)}
                           >
                             <i className="bi bi-pencil"></i>
-                            Sửa
+                            
                           </button>
                           <button
                             className="btn btn-danger"
                             onClick={() => handleDeleteViec(viec.MaViec)}
                           >
                             <i className="bi bi-trash"></i>
-                            Xóa
+                           
                           </button>
                         </td>
                       </tr>

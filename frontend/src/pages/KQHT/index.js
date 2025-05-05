@@ -41,9 +41,10 @@ const KQHT = () => {
     const { DiemGiuaKy, DiemCuoiKy } = formData;
 
     if (DiemGiuaKy < 0 || DiemGiuaKy > 10 || DiemCuoiKy < 0 || DiemCuoiKy > 10) {
-      setMessage("Điểm phải nằm trong khoảng từ 0 đến 10.");
+      window.alert("Điểm phải nằm trong khoảng từ 0 đến 10.");
       return;
     }
+    
 
     const payload = {
       ...formData,
@@ -100,6 +101,17 @@ const KQHT = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const handleModalClick = (e) => {
+    // If the click is outside the modal content, close the modal
+    if (e.target === e.currentTarget) {
+      handleCloseModal();
+    }
+  };
+
   if (loadingUser) return <div>Loading...</div>;
 
   return (
@@ -108,16 +120,22 @@ const KQHT = () => {
 
       {message && <div className="alert alert-info">{message}</div>}
 
-      <button className="btn btn-primary mb-3" onClick={handleAddNew}>Thêm Kết Quả</button>
+      <button className="btn btn-success" onClick={handleAddNew}><i className="bi bi-plus-circle me-2"></i>Thêm Kết Quả</button>
 
       {/* Modal popup */}
       {showModal && (
-        <div className="modal d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal d-block"
+          tabIndex="-1"
+          role="dialog"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={handleModalClick}
+        >
           <div className="modal-dialog modal-lg" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">{isEditing ? "Cập Nhật Kết Quả" : "Thêm Kết Quả"}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="modal-body row">
@@ -137,7 +155,7 @@ const KQHT = () => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Hủy</button>
+                  <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Hủy</button>
                   <button type="submit" className="btn btn-success">{isEditing ? "Cập Nhật" : "Thêm"}</button>
                 </div>
               </form>
@@ -165,8 +183,14 @@ const KQHT = () => {
               <td>{kq.DiemCuoiKy}</td>
               <td>{kq.DiemTrungBinh}</td>
               <td>
-                <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(kq)}>Sửa</button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(kq.MaKetQuaHoc)}>Xóa</button>
+              <button className="btn btn-warning me-2" onClick={() => handleEdit(kq)}>
+              <i className="bi bi-pencil"></i>
+              </button>
+              <button className="btn btn-danger" onClick={() => handleDelete(kq.MaKetQuaHoc)}>
+             <i className="bi bi-trash"></i>
+              </button>
+
+
               </td>
             </tr>
           )) : (

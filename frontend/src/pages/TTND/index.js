@@ -238,9 +238,15 @@ const UserInfo = ({ onAvatarUpdate }) => {
               </div>
 
               <div className="d-flex justify-content-center mt-4 gap-3">
-                {isPasswordChangeMode ? (
+                              {isPasswordChangeMode ? (
                   <div className="w-100">
                     <h3>Đổi mật khẩu</h3>
+                    {error && (
+                      <div className="alert alert-danger" role="alert">
+                        {error}
+                      </div>
+                    )}
+
                     <div className="mb-3">
                       <label className="form-label">Mật khẩu cũ</label>
                       <input

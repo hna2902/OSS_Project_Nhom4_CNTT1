@@ -73,10 +73,13 @@ const TKB = () => {
   };
 
   const handleDeleteMon = (idtkb) => {
-    axios.delete(`/api/thoikhoabieu/${idtkb}/delete_subject/`)
-      .then(() => setRefresh(prev => !prev))
-      .catch(err => alert("Xóa thất bại"));
+    if (window.confirm("Bạn có chắc muốn xóa lịch học này?")) {
+      axios.delete(`/api/thoikhoabieu/${idtkb}/delete_subject/`)
+        .then(() => setRefresh(prev => !prev))
+        .catch(err => alert("Xóa thất bại"));
+    }
   };
+  
 
   const handleEditMon = (tkb) => {
     setFormData({
@@ -105,16 +108,29 @@ const TKB = () => {
       <center><h2 className="mb-4">Thời Khóa Biểu</h2></center>
       
 
-      <button className="btn btn-success mb-3" onClick={() => setShowModal(true)}>
+      <button className="btn btn-success" onClick={() => setShowModal(true)}>
+      <i className="bi bi-plus-circle me-2"></i>
         Thêm mới
       </button>
-      <button className="btn btn-danger mb-3 ms-2" onClick={handleDeleteAll}>
+      <button className="btn btn-danger " onClick={handleDeleteAll}>
   Xóa toàn bộ
 </button>
 
       {/* Modal */}
       {showModal && (
-        <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+         <div
+    className="modal d-block"
+    tabIndex="-1"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+    onClick={(e) => {
+      if (e.target.classList.contains("modal")) {
+        setShowModal(false);
+        setFormData({ Thu: "", MonHoc: "", ThoiGianHoc: "" });
+        setIsEditing(false);
+        setEditId(null);
+      }
+    }}
+  >
           <div className="modal-dialog">
             <div className="modal-content">
               <form onSubmit={handleSubmit}>
@@ -182,8 +198,8 @@ const TKB = () => {
                           {(monHocs.find(m => m.MaMonHoc === mon.MonHoc) || {}).TenMon || mon.MonHoc}
                         </strong>
                         <div className="mt-1">
-                          <button onClick={() => handleEditMon(mon)} className="btn btn-sm btn-info mr-1">Sửa</button>
-                          <button onClick={() => handleDeleteMon(mon.IDTKB)} className="btn btn-sm btn-danger">Xóa</button>
+                          <button className="btn btn-warning me-2" onClick={() => handleEditMon(mon)} ><i className="bi bi-pencil"></i>  </button>
+                          <button className="btn btn-danger" onClick={() => handleDeleteMon(mon.IDTKB)} ><i className="bi bi-trash"></i></button>
                         </div>
                       </>
                     ) : null}

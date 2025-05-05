@@ -1,15 +1,22 @@
 // src/components/Layout.js
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useNavigate } from 'react-router-dom';
-import axios from '../utils/axios'; // Sử dụng instance axios có cấu hình sẵn
-import { UserContext } from '../contexts/UserContext'; // 🔥 Dùng context
+import axios from '../utils/axios';
+import { UserContext } from '../contexts/UserContext';
 import './Layout.css';
 
 const Layout = ({ children }) => {
-  const { user, setUser } = useContext(UserContext); // 🔥 Lấy từ context
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
+
+  // Đưa state sidebarOpen vào Layout
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen); // Toggle trạng thái sidebar
+  };
 
   const handleLogout = async () => {
     try {
@@ -18,7 +25,7 @@ const Layout = ({ children }) => {
       });
 
       localStorage.removeItem('user');
-      setUser(null); // 🔥 Cập nhật lại context
+      setUser(null);
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
@@ -26,12 +33,15 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="d-flex">
-      <Sidebar />
-
-      <div className="flex-grow-1 p-4">
-        <Header currentUser={user} onLogout={handleLogout} />
-        {children}
+    <div className="layout-wrapper d-flex">
+      {/* Truyền sidebarOpen và toggleSidebar cho Sidebar */}
+      <Sidebar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+      
+      <div className="main-content">
+        <Header currentUser={user} onLogout={handleLogout} toggleSidebar={toggleSidebar} />
+        <div className="content-scroll">
+          {children}
+        </div>
       </div>
     </div>
   );
