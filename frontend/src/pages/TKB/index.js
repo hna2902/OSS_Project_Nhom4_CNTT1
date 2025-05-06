@@ -75,11 +75,12 @@ const TKB = () => {
 
   const handleDeleteMon = (idtkb) => {
     if (window.confirm("Bạn có chắc muốn xóa lịch học này?")) {
-      axios.delete(`/api/thoikhoabieu/${idtkb}/delete_subject/`)
+      axios.delete(`/api/thoikhoabieu/${idtkb}/`) // Chỉ cần gọi API xóa mặc định theo ID
         .then(() => setRefresh(prev => !prev))
         .catch(err => alert("Xóa thất bại"));
     }
   };
+  
   
 
   const handleEditMon = (tkb) => {

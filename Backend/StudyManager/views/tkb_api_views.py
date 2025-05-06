@@ -42,17 +42,24 @@ class ThoiKhoaBieuViewSet(viewsets.ViewSet):
 
         return Response({"message": "Đã thêm môn học vào thời khóa biểu!"})
 
-    # Xóa toàn bộ thời khóa biểu theo MaTKB
+    
+   
+    # Xóa một môn học khỏi thời khóa biểu theo IDTKB
     def destroy(self, request, pk=None):
         user_id = request.session.get("user_id")
         if not user_id:
             return Response({"error": "Bạn chưa đăng nhập!"}, status=401)
 
-        result = db.ThoiKhoaBieu.delete_many({"MaTKB": pk, "MaNguoiDung": user_id})
-        if result.deleted_count == 0:
-            return Response({"error": "Không tìm thấy thời khóa biểu hoặc không có quyền xóa."}, status=404)
+        result = db.ThoiKhoaBieu.delete_one({
+            "IDTKB": pk,
+            "MaNguoiDung": user_id
+        })
 
-        return Response({"message": "Đã xóa thời khóa biểu thành công."})
+        if result.deleted_count == 0:
+            return Response({"error": "Không tìm thấy môn học hoặc không có quyền xóa."}, status=404)
+
+        return Response({"message": "Môn học đã được xóa khỏi thời khóa biểu!"})
+
 
     # Cập nhật môn học theo IDTKB
     def update(self, request, pk=None):
@@ -77,22 +84,6 @@ class ThoiKhoaBieuViewSet(viewsets.ViewSet):
 
         return Response({"message": "Môn học đã được cập nhật!"})
 
-    # Xóa môn học theo IDTKB
-    @action(detail=True, methods=['delete'], url_path='delete_subject')
-    def delete_by_idtkb(self, request, pk=None):
-        user_id = request.session.get("user_id")
-        if not user_id:
-            return Response({"error": "Bạn chưa đăng nhập!"}, status=401)
-
-        result = db.ThoiKhoaBieu.delete_one({
-            "IDTKB": pk,
-            "MaNguoiDung": user_id
-        })
-
-        if result.deleted_count == 0:
-            return Response({"error": "Không tìm thấy môn học hoặc không có quyền xóa."}, status=404)
-
-        return Response({"message": "Môn học đã được xóa khỏi thời khóa biểu!"})
 
         
     @action(detail=False, methods=['delete'], url_path='delete_all')
