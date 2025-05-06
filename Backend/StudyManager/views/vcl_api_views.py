@@ -12,13 +12,6 @@ class ViecCanLamViewSet(viewsets.ViewSet):
         data = list(db.ViecCanLam.find({"MaNguoiDung": user_id}, {"_id": 0}))
         return Response(data)
 
-    def retrieve(self, request, pk=None):
-        user_id = request.session.get("user_id")
-        viec = db.ViecCanLam.find_one({"MaViec": pk, "MaNguoiDung": user_id})
-        if viec:
-            return Response(viec)
-        return Response({"error": "Không tìm thấy việc cần làm"}, status=404)
-
     def create(self, request):
         user_id = request.session.get("user_id")
         if not user_id:

@@ -12,13 +12,6 @@ class QLTinChiViewSet(viewsets.ViewSet):
         tinchis = list(db.QLTinChi.find({"MaNguoiDung": user_id}, {"_id": 0}))
         return Response(tinchis)
 
-    def retrieve(self, request, pk=None):
-        user_id = request.session.get("user_id")
-        tinchi = db.QLTinChi.find_one({"IDTinChi": pk, "MaNguoiDung": user_id}, {"_id": 0})
-        if tinchi:
-            return Response(tinchi)
-        return Response({"error": "Không tìm thấy tín chỉ"}, status=404)
-
     def create(self, request):
         user_id = request.session.get("user_id")
         if not user_id:

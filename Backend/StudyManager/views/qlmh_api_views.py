@@ -13,13 +13,6 @@ class QLMonHocViewSet(viewsets.ViewSet):
         return Response(data)
 
 
-    def retrieve(self, request, pk=None):
-        user_id = request.session.get('user_id')
-        monhoc = db.QLMonHoc.find_one({"_id": pk, "MaNguoiDung": user_id})
-        if monhoc:
-            return Response(monhoc)
-        return Response({"error": "Không tìm thấy môn học"}, status=404)
-
     def create(self, request):
         user_id = request.session.get("user_id")
         if not user_id:
