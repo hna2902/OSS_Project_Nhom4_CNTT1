@@ -12,13 +12,6 @@ class QLKetQuaHocViewSet(viewsets.ViewSet):
         ketquas = list(db.QLKetQuaHoc.find({"MaNguoiDung": user_id}, {"_id": 0}))
         return Response(ketquas)
 
-    def retrieve(self, request, pk=None):
-        user_id = request.session.get("user_id")
-        ketqua = db.QLKetQuaHoc.find_one({"_id": pk, "MaNguoiDung": user_id})
-        if ketqua:
-            return Response(ketqua)
-        return Response({"error": "Không tìm thấy kết quả học"}, status=404)
-
     def create(self, request):
         user_id = request.session.get("user_id")
         if not user_id:
@@ -28,9 +21,6 @@ class QLKetQuaHocViewSet(viewsets.ViewSet):
         ma_mon = data.get("MaMonHoc")
         diem_giua_ky = data.get("DiemGiuaKy")
         diem_cuoi_ky = data.get("DiemCuoiKy")
-
-        if not ma_mon or diem_giua_ky is None or diem_cuoi_ky is None:
-            return Response({"error": "Thiếu thông tin bắt buộc"}, status=400)
 
         # Truy vấn tên môn học từ bảng QLMonHoc
         mon_hoc = db.QLMonHoc.find_one({"MaMonHoc": ma_mon})

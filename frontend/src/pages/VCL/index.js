@@ -2,10 +2,10 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import * as bootstrap from 'bootstrap';
-import React, { useState, useEffect, useContext } from 'react'; 
+import React, { useState, useEffect, useContext } from 'react';
 import Layout from '../../components/Layout';
 import axios from 'axios';
-import { UserContext } from '../../contexts/UserContext'; 
+import { UserContext } from '../../contexts/UserContext';
 
 function VCL() {
   const { user, setUser, loadingUser } = useContext(UserContext);
@@ -25,10 +25,12 @@ function VCL() {
 
   const [tenMonFilter, setTenMonFilter] = useState('');
   const [thoiHanFilter, setThoiHanFilter] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     fetchData();
   }, []);
+    
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -63,43 +65,49 @@ function VCL() {
   const closeModalManually = () => {
     const modalElement = document.getElementById('themViecModal');
     if (modalElement) {
-      const modal = bootstrap.Modal.getInstance(modalElement);
-      if (modal) modal.hide();
+      const modal = bootstrap.Modal.getInstance(modalElement) || bootstrap.Modal.getOrCreateInstance(modalElement);
+      modal.hide();
+      modal.dispose();
     }
     document.body.classList.remove('modal-open');
-    const backdrop = document.querySelector('.modal-backdrop');
-    if (backdrop) backdrop.remove();
+    document.body.style = ''; // reset inline style nếu có
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(b => b.remove());
   };
 
   const handleAddOrUpdateViec = async (e) => {
     e.preventDefault();
+    setError(null);
     setIsLoading(true);
+
+    // Kiểm tra dữ liệu bắt buộc trước khi submit
+    const { NhacNho, ThoiHan, MaMonHoc } = formData;
+    if (!NhacNho || !ThoiHan || !MaMonHoc) {
+      setError("Vui lòng nhập đầy đủ Nhắc nhở, Thời hạn và chọn Môn học.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const newViec = { ...formData };
-      if (selectedViec) {
-        await axios.put(`http://localhost:8000/api/vieccanlam/${selectedViec.MaViec}/`, newViec, { withCredentials: true });
-      } else {
-        await axios.post('http://localhost:8000/api/vieccanlam/', newViec, { withCredentials: true });
-      }
-  
-      // Sau khi thêm xong, reload toàn bộ trang
-      window.location.reload();
-  
-    } catch (error) {
-      console.error('Error:', error);
-      setError(error.response?.data?.detail || error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  
+      let response;
 
-  const handleDeleteViec = async (maViec) => {
-    if (!window.confirm('Bạn có chắc muốn xóa việc này không?')) return;
-    setIsLoading(true);
-    try {
-      await axios.delete(`http://localhost:8000/api/vieccanlam/${maViec}/`, { withCredentials: true });
+      if (selectedViec) {
+        response = await axios.put(
+          `http://localhost:8000/api/vieccanlam/${selectedViec.MaViec}/`,
+          newViec,
+          { withCredentials: true }
+        );
+      } else {
+        response = await axios.post(
+          'http://localhost:8000/api/vieccanlam/',
+          newViec,
+          { withCredentials: true }
+        );
+      }
+
+      // Hiển thị thông báo từ backend
+      setSuccessMessage(response.data.message || 'Thao tác thành công.');
       await fetchData();
       closeModalManually();
     } catch (error) {
@@ -109,6 +117,29 @@ function VCL() {
       setIsLoading(false);
     }
   };
+
+  const handleDeleteViec = async (maViec) => {
+    if (!window.confirm('Bạn có chắc muốn xóa việc này không?')) return;
+    setIsLoading(true);
+    setError(null);  // Clear any previous errors
+    setSuccessMessage('');  // Clear any previous success message
+    try {
+      const response = await axios.delete(`http://localhost:8000/api/vieccanlam/${maViec}/`, { withCredentials: true });
+      
+      // Nhận thông báo từ backend sau khi xóa thành công
+      setSuccessMessage(response.data.message || 'Xóa việc thành công.');
+  
+      // Cập nhật lại danh sách việc cần làm sau khi xóa
+      await fetchData();
+      closeModalManually();
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error.response?.data?.detail || error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
 
   const handleEditViec = (viec) => {
     setSelectedViec(viec);
@@ -133,6 +164,8 @@ function VCL() {
   const handleOpenAddModal = () => {
     setSelectedViec(null);
     setFormData({ NhacNho: '', GhiChu: '', ThoiHan: '', MaMonHoc: '' });
+    // Xóa error cũ khi mở modal mới
+    setError(null);
     const modalElement = document.getElementById('themViecModal');
     if (modalElement) {
       const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
@@ -148,18 +181,12 @@ function VCL() {
 
   const filterTable = () => {
     const rows = document.querySelectorAll("#viecTable tbody tr");
-  
+
     rows.forEach(row => {
       const tenMon = row.getAttribute("data-tenmon") ? row.getAttribute("data-tenmon").toLowerCase() : "";
       const thoiHan = row.getAttribute("data-thoihan") || "";
-  
-      // Kiểm tra điều kiện lọc
       const tenMonMatch = tenMonFilter === "" || tenMon === tenMonFilter;
-      
-      // Thay vì chỉ so sánh trực tiếp, kiểm tra nếu ngày thời hạn nhỏ hơn hoặc bằng ngày đã chọn
       const thoiHanMatch = !thoiHanFilter || new Date(thoiHan) <= new Date(thoiHanFilter);
-  
-      // Hiển thị hoặc ẩn hàng
       if (tenMonMatch && thoiHanMatch) {
         row.style.display = "";
       } else {
@@ -167,13 +194,11 @@ function VCL() {
       }
     });
   };
-  
-  
 
   const resetFilter = () => {
     setTenMonFilter('');
     setThoiHanFilter('');
-    filterTable(); // Gọi lại hàm lọc để hiển thị tất cả hàng
+    filterTable();
   };
 
   if (isLoading) return <div className="text-center my-5"><div className="spinner-border" role="status"><span className="visually-hidden">Đang tải...</span></div></div>;
@@ -187,31 +212,38 @@ function VCL() {
           <i className="bi bi-plus-circle me-2"></i>Thêm Việc
         </button>
 
-          {/* Phần lọc */}
-          <div className="d-flex mb-3">
-            <select
-              id="tenMonFilter"
-              className="form-control me-2"
-              value={tenMonFilter}
-              onChange={(e) => setTenMonFilter(e.target.value)} // Chỉ thay đổi giá trị mà không lọc ngay
-            >
-              <option value="">Lọc theo môn học</option>
-              {monhoc.map(mon => (
-                <option key={mon.MaMonHoc} value={mon.TenMon.toLowerCase()}>
-                  {mon.TenMon}
-                </option>
-              ))}
-            </select>
-            <input
-              id="thoiHanFilter"
-              type="date"
-              className="form-control"
-              value={thoiHanFilter}
-              onChange={(e) => setThoiHanFilter(e.target.value)} // Chỉ thay đổi giá trị mà không lọc ngay
-            />
-            <button className="btn btn-secondary ms-2" onClick={resetFilter}>Reset</button>
-            <button className="btn btn-primary ms-2" onClick={filterTable}>Xác nhận</button> {/* Nút xác nhận */}
+        {successMessage && (
+          <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            {successMessage}
+            <button type="button" className="btn-close" onClick={() => setSuccessMessage('')} aria-label="Close"></button>
           </div>
+        )}
+
+        {/* Phần lọc */}
+        <div className="d-flex mb-3">
+          <select
+            id="tenMonFilter"
+            className="form-control me-2"
+            value={tenMonFilter}
+            onChange={(e) => setTenMonFilter(e.target.value)}
+          >
+            <option value="">Lọc theo môn học</option>
+            {monhoc.map(mon => (
+              <option key={mon.MaMonHoc} value={mon.TenMon.toLowerCase()}>
+                {mon.TenMon}
+              </option>
+            ))}
+          </select>
+          <input
+            id="thoiHanFilter"
+            type="date"
+            className="form-control"
+            value={thoiHanFilter}
+            onChange={(e) => setThoiHanFilter(e.target.value)}
+          />
+          <button className="btn btn-secondary ms-2" onClick={resetFilter}>Reset</button>
+          <button className="btn btn-primary ms-2" onClick={filterTable}>Xác nhận</button>
+        </div>
 
         <div className="card shadow-sm">
           <div className="card-body">
@@ -238,25 +270,19 @@ function VCL() {
                         <td>{viec.GhiChu}</td>
                         <td>{formatDate(viec.ThoiHan)}</td>
                         <td>
-                          <button
-                            className="btn btn-warning me-2"
-                            onClick={() => handleEditViec(viec)}
-                          >
+                          <button className="btn btn-warning me-2" onClick={() => handleEditViec(viec)}>
                             <i className="bi bi-pencil"></i>
-                            
                           </button>
-                          <button
-                            className="btn btn-danger"
-                            onClick={() => handleDeleteViec(viec.MaViec)}
-                          >
+                          <button className="btn btn-danger" onClick={() => handleDeleteViec(viec.MaViec)}>
                             <i className="bi bi-trash"></i>
-                           
                           </button>
                         </td>
                       </tr>
                     ))
                   ) : (
-                    <tr><td colSpan="5" className="text-center">Không có công việc nào</td></tr>
+                    <tr>
+                      <td colSpan="5" className="text-center">Không có công việc nào</td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -273,6 +299,12 @@ function VCL() {
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div className="modal-body">
+                {/* Hiển thị lỗi nếu có */}
+                {error && (
+                  <div className="alert alert-danger" role="alert">
+                    {error}
+                  </div>
+                )}
                 <form onSubmit={handleAddOrUpdateViec}>
                   <div className="mb-3">
                     <label htmlFor="NhacNho" className="form-label">Nhắc nhở</label>
@@ -282,7 +314,7 @@ function VCL() {
                       id="NhacNho"
                       name="NhacNho"
                       value={formData.NhacNho}
-                      onChange={handleInputChange}
+                      onChange={handleInputChange} required
                     />
                   </div>
                   <div className="mb-3">
@@ -292,7 +324,7 @@ function VCL() {
                       id="GhiChu"
                       name="GhiChu"
                       value={formData.GhiChu}
-                      onChange={handleInputChange}
+                      onChange={handleInputChange} required
                     />
                   </div>
                   <div className="mb-3">
@@ -303,7 +335,7 @@ function VCL() {
                       id="ThoiHan"
                       name="ThoiHan"
                       value={formData.ThoiHan}
-                      onChange={handleInputChange}
+                      onChange={handleInputChange} required
                     />
                   </div>
                   <div className="mb-3">
@@ -313,7 +345,7 @@ function VCL() {
                       id="MaMonHoc"
                       name="MaMonHoc"
                       value={formData.MaMonHoc}
-                      onChange={handleInputChange}
+                      onChange={handleInputChange} required
                     >
                       <option value="">Chọn môn học</option>
                       {monhoc.map((mon) => (
@@ -332,6 +364,7 @@ function VCL() {
             </div>
           </div>
         </div>
+
       </div>
     </Layout>
   );
