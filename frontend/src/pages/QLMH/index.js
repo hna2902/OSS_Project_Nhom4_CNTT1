@@ -45,18 +45,28 @@ const QLMH = () => {
   
     if (editMonHoc) {
       axios.put(`/api/monhoc/${editMonHoc.MaMonHoc}/`, form, { withCredentials: true })
-        .then(() => {
+        .then(res => {
+          setNotification({ type: "success", message: res.data.message });
           fetchMonHoc();
           resetForm();
         })
-        .catch(err => console.error("Error submitting form:", err));
+        .catch(err => {
+          const msg = err.response?.data?.error || "Lỗi không xác định!";
+          setNotification({ type: "error", message: msg });
+        });
+
     } else {
       axios.post("/api/monhoc/", form, { withCredentials: true })
-        .then(() => {
+        .then(res => {
+          setNotification({ type: "success", message: res.data.message });
           fetchMonHoc();
           resetForm();
         })
-        .catch(err => console.error("Error submitting form:", err));
+        .catch(err => {
+          const msg = err.response?.data?.error || "Lỗi không xác định!";
+          setNotification({ type: "error", message: msg });
+        });
+
     }
   };
   
@@ -64,8 +74,16 @@ const QLMH = () => {
   const handleDelete = id => {
     if (window.confirm("Bạn có chắc chắn muốn xóa môn học này?")) {
       axios.delete(`/api/monhoc/${id}/`, { withCredentials: true })
-        .then(() => fetchMonHoc())
-        .catch(err => console.error("Error deleting monhoc:", err));
+        .then(res => {
+          const msg = res.data?.message || "Xóa thành công!";
+          setNotification({ type: "success", message: msg });
+          fetchMonHoc();
+        })
+        .catch(err => {
+          const msg = err.response?.data?.error || "Không thể xóa môn học!";
+          setNotification({ type: "error", message: msg });
+  });
+
     }
   };
   
@@ -87,11 +105,19 @@ const QLMH = () => {
     setShowModal(false);
   };
 
+  const [notification, setNotification] = useState(null);
+
+
   if (loadingUser) return <div>Loading...</div>;
 
   return (
     <Layout>
       <center><h2>Danh sách Môn Học</h2></center>
+      {notification && (
+  <div className={`alert ${notification.type === "error" ? "alert-danger" : "alert-success"}`} role="alert">
+    {notification.message}
+  </div>
+)}
 
       <button className="btn btn-success" onClick={() => setShowModal(true)}>
       <i className="bi bi-plus-circle me-2"></i>

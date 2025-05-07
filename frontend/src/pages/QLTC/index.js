@@ -62,21 +62,37 @@ const QLTC = () => {
     const method = editingId ? axios.put : axios.post;
   
     method(url, formData, { withCredentials: true })
-      .then(() => {
-        setRefresh(prev => !prev);
-        closeModal();
-      })
-      .catch(err => {
-        alert(err.response?.data?.error || (editingId ? "Cập nhật thất bại!" : "Thêm mới thất bại!"));
-      });
+    .then(res => {
+      setMessage(res.data.message || "Thao tác thành công");
+      setMessageType("success");
+      setRefresh(prev => !prev);
+      closeModal();
+    })
+    .catch(err => {
+      const errorMsg = err.response?.data?.error || "Thao tác thất bại!";
+      setMessage(errorMsg);
+      setMessageType("error");
+    });
+  
   };
+  const [message, setMessage] = useState(null);  // message nội dung
+  const [messageType, setMessageType] = useState(null);  // "success" hoặc "error"
   
 
   const handleDelete = (id) => {
     if (window.confirm("Bạn có chắc muốn xóa tín chỉ này?")) {
       axios.delete(`http://localhost:8000/api/tinchi/${id}/`, { withCredentials: true })
-        .then(() => setRefresh(prev => !prev))
-        .catch(() => alert("Xóa thất bại"));
+        .then(res => {
+          setMessage(res.data.message || "Xóa thành công");
+          setMessageType("success");
+          setRefresh(prev => !prev);
+        })
+        .catch(err => {
+          const errorMsg = err.response?.data?.error || "Xóa thất bại!";
+          setMessage(errorMsg);
+          setMessageType("error");
+        });
+
     }
   };
 
@@ -84,7 +100,13 @@ const QLTC = () => {
     <Layout>
  
         <center><h2>Quản lý Tín Chỉ</h2></center>
-        
+        {message && (
+  <div className={`alert ${messageType === "success" ? "alert-success" : "alert-danger"} alert-dismissible fade show`} role="alert">
+    {message}
+    <button type="button" className="btn-close" onClick={() => setMessage(null)}></button>
+  </div>
+)}
+
 
       <button className="btn btn-success" onClick={() => openModal()}>
       <i className="bi bi-plus-circle me-2"></i>Thêm Tín Chỉ</button>

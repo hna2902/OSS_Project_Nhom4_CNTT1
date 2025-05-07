@@ -16,7 +16,7 @@ const Register = () => {
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  const [success, setSuccess] = useState(null);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -30,6 +30,7 @@ const Register = () => {
     try {
       const response = await axios.post('/api/register/', formData);
       if (response.status === 201) {
+        setSuccess(response.data.message);
         navigate('/login');
       }
     } catch (err) {

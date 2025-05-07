@@ -14,6 +14,7 @@ const UserInfo = ({ onAvatarUpdate }) => {
     oldPassword: '',
     newPassword: ''
   });
+  const [success, setSuccess] = useState(null);
 
   const [passwords, setPasswords] = useState({
     oldPassword: '',
@@ -77,6 +78,7 @@ const UserInfo = ({ onAvatarUpdate }) => {
           localStorage.setItem('user', JSON.stringify(updatedUser.data));
 
           setIsEditMode(false);
+          setSuccess(res.data.message || "Cập nhật thành công!");
         } else {
           setError("Không thể cập nhật thông tin người dùng.");
         }
@@ -104,6 +106,7 @@ const UserInfo = ({ onAvatarUpdate }) => {
       });
 
       setUser(prev => ({ ...prev, Avatar: res.data.avatar_url }));
+      setSuccess(res.data.message || 'Upload thành công!');
       if (onAvatarUpdate) {
         onAvatarUpdate(res.data.avatar_url);
       }
@@ -129,8 +132,9 @@ const UserInfo = ({ onAvatarUpdate }) => {
 
       if (res.status === 200) {
         setIsPasswordChangeMode(false);
+        setSuccess(res.data.message || "Đổi mật khẩu thành công!");
         setPasswords({ oldPassword: '', newPassword: '' });
-        alert("Đổi mật khẩu thành công!");
+        
       } else {
         setError(res.data.error || "Không thể đổi mật khẩu");
       }
@@ -153,6 +157,9 @@ const UserInfo = ({ onAvatarUpdate }) => {
     <Layout>
       <div className="container mt-4">
         <center><h2>Thông tin của bạn</h2></center>
+        {success && <div className="alert alert-success">{success}</div>}
+        {error && <div className="alert alert-danger">{error}</div>}
+
         <div className="card p-4 shadow-sm">
           <div className="row">
             <div className="col-md-3 text-center">

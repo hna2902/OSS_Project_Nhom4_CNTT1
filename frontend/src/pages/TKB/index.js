@@ -39,7 +39,9 @@ const TKB = () => {
   );
   
   
-  
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("success"); // hoặc 'error'
+
 
   useEffect(() => {
     axios.get("/api/thoikhoabieu/")
@@ -56,15 +58,21 @@ const TKB = () => {
     const request = isEditing
       ? axios.put(`/api/thoikhoabieu/${editId}/`, formData)
       : axios.post("/api/thoikhoabieu/", formData);
-  
+
     request
-      .then(() => {
+      .then(res => {
+        setMessage(res.data.message);         
+        setMessageType("success");           
         resetForm();
         setShowModal(false);
-        window.location.reload(); // ✅ Reload trang sau khi thêm/cập nhật
+        setRefresh(prev => !prev);
       })
-      .catch(err => alert(err.response?.data?.error || "Có lỗi xảy ra!"));
+      .catch(err => {
+        setMessage(err.response?.data?.error || "Có lỗi xảy ra!");
+        setMessageType("error");
+      });
   };
+  
   
 
   const resetForm = () => {
@@ -75,11 +83,19 @@ const TKB = () => {
 
   const handleDeleteMon = (idtkb) => {
     if (window.confirm("Bạn có chắc muốn xóa lịch học này?")) {
-      axios.delete(`/api/thoikhoabieu/${idtkb}/`) // Chỉ cần gọi API xóa mặc định theo ID
-        .then(() => setRefresh(prev => !prev))
-        .catch(err => alert("Xóa thất bại"));
+      axios.delete(`/api/thoikhoabieu/${idtkb}/`)
+        .then(res => {
+          setMessage(res.data.message);       // ✅ set thông báo
+          setMessageType("success");
+          setRefresh(prev => !prev);
+        })
+        .catch(err => {
+          setMessage(err.response?.data?.error || "Xóa thất bại");
+          setMessageType("error");
+        });
     }
   };
+  
   
   
 
@@ -97,11 +113,13 @@ const TKB = () => {
     if (window.confirm("Bạn có chắc muốn xóa toàn bộ thời khóa biểu?")) {
       axios.delete("/api/thoikhoabieu/delete_all/")
         .then(res => {
-          alert(res.data.message);
-          setRefresh(prev => !prev); // reload lại dữ liệu nếu có dùng useEffect
+          setMessage(res.data.message);       // ✅ set thông báo
+          setMessageType("success");
+          setRefresh(prev => !prev);
         })
         .catch(err => {
-          alert("Xóa thất bại: " + (err.response?.data?.error || "Lỗi không xác định"));
+          setMessage("Xóa thất bại: " + (err.response?.data?.error || "Lỗi không xác định"));
+          setMessageType("error");
         });
     }
   };
@@ -109,6 +127,11 @@ const TKB = () => {
     <Layout>
       <center><h2 className="mb-4">Thời Khóa Biểu</h2></center>
       
+          {message && (
+          <div className={`alert ${messageType === "success" ? "alert-success" : "alert-danger"} mt-2`} role="alert">
+            {message}
+          </div>
+    )}
 
       <button className="btn btn-success" onClick={() => setShowModal(true)}>
       <i className="bi bi-plus-circle me-2"></i>

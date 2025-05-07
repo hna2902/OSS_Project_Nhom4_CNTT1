@@ -10,7 +10,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
-
+  const [successMessage, setSuccessMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -25,15 +25,17 @@ const Login = () => {
       if (response.status === 200) {
         localStorage.setItem('user', JSON.stringify(response.data.user_info));
         setUser(response.data.user_info);
+        setSuccessMessage(response.data.message);
         navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrorMessage('Tài khoản hoặc mật khẩu không đúng!');
+      setErrorMessage(error.response?.data?.error);
     }
   };
 
   return (
+    
     <div className={styles.overlay}>
       <form className={styles.authForm} onSubmit={handleSubmit}>
         <h2 className={styles.formTitle}>Đăng nhập</h2>
@@ -73,7 +75,9 @@ const Login = () => {
           </div>
         </div>
         
+        {successMessage && <p className={styles.successText}>{successMessage}</p>}
         {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+
       </form>
     </div>
   );
