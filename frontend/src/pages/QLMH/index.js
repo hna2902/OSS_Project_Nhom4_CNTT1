@@ -219,75 +219,79 @@ const QLMH = () => {
         </tbody>
       </table>
 
-      {/* Modal Form */}
-      {showModal && (
-        <div className="modal show fade d-block" tabIndex="-1" role="dialog" onClick={resetForm}>
-          <div className="modal-dialog" role="document" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">
-                  {editMonHoc ? "Cập Nhật Môn Học" : "Thêm Môn Học"}
-                </h5>
-                <button type="button" className="btn-close" onClick={resetForm}></button>
-              </div>
+{/* Modal Form */}
+{showModal && (
+  <div className="modal show fade d-block" tabIndex="-1" role="dialog" onClick={resetForm}>
+    <div className="modal-dialog" role="document" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">
+            {editMonHoc ? "Cập Nhật Môn Học" : "Thêm Môn Học"}
+          </h5>
+          <button type="button" className="btn-close" onClick={resetForm}></button>
+        </div>
 
-              <form onSubmit={handleSubmit}>
-              <div className="modal-body">
-              <div className="mb-2">
-                <label className="form-label">Tên môn</label>
-                <input type="text" name="TenMon" value={form.TenMon} onChange={handleInput} required className="form-control" />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Giảng viên</label>
-                <input type="text" name="GiangVien" value={form.GiangVien} onChange={handleInput} required className="form-control" />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Thời gian bắt đầu</label>
-                <input type="date" name="ThoiGianBatDau" value={form.ThoiGianBatDau} onChange={handleInput} required className="form-control" />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Thời gian kết thúc</label>
-                <input type="date" name="ThoiGianKetThuc" value={form.ThoiGianKetThuc} onChange={handleInput} required className="form-control" />
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Năm học</label>
-                <input
-                  type="text"
-                  name="NamHoc"
-                  value={form.NamHoc}
-                  onChange={handleInput}
-                  list="namHocOptions"
-                  required
-                  className="form-control"
-                />
-                <datalist id="namHocOptions">
-                  <option value="2022-2023" />
-                  <option value="2023-2024" />
-                  <option value="2024-2025" />
-                </datalist>
-              </div>
-
-              <div className="mb-2">
-                <label className="form-label">Học kỳ</label>
-                <select name="HocKy" value={form.HocKy} onChange={handleInput} required className="form-control">
-                  <option value="">Chọn học kỳ</option>
-                  <option value="1">Học kỳ 1</option>
-                  <option value="2">Học kỳ 2</option>
-                  <option value="3">Học kỳ hè</option>
-                </select>
-              </div>
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            <div className="mb-2">
+              <label className="form-label">Tên môn</label>
+              <input type="text" name="TenMon" value={form.TenMon} onChange={handleInput} required className="form-control" />
             </div>
 
-              </form>
+            <div className="mb-2">
+              <label className="form-label">Giảng viên</label>
+              <input type="text" name="GiangVien" value={form.GiangVien} onChange={handleInput} required className="form-control" />
+            </div>
 
+            <div className="mb-2">
+              <label className="form-label">Thời gian bắt đầu</label>
+              <input type="date" name="ThoiGianBatDau" value={form.ThoiGianBatDau} onChange={handleInput} required className="form-control" />
+            </div>
+
+            <div className="mb-2">
+              <label className="form-label">Thời gian kết thúc</label>
+              <input type="date" name="ThoiGianKetThuc" value={form.ThoiGianKetThuc} onChange={handleInput} required className="form-control" />
+            </div>
+
+            <div className="mb-2">
+              <label className="form-label">Năm học</label>
+              <input
+                type="text"
+                name="NamHoc"
+                value={form.NamHoc}
+                onChange={handleInput}
+                list="namHocOptions"
+                required
+                className="form-control"
+              />
+              <datalist id="namHocOptions">
+                <option value="2022-2023" />
+                <option value="2023-2024" />
+                <option value="2024-2025" />
+              </datalist>
+            </div>
+
+            <div className="mb-2">
+              <label className="form-label">Học kỳ</label>
+              <select name="HocKy" value={form.HocKy} onChange={handleInput} required className="form-control">
+                <option value="">Chọn học kỳ</option>
+                <option value="1">Học kỳ 1</option>
+                <option value="2">Học kỳ 2</option>
+                <option value="3">Học kỳ hè</option>
+              </select>
             </div>
           </div>
-        </div>
-      )}
+
+          <div className="modal-footer">
+            <button type="submit" className="btn btn-primary">Lưu</button>
+            <button type="button" className="btn btn-secondary" onClick={resetForm}>Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+)}
+
     </Layout>
   );
 };
