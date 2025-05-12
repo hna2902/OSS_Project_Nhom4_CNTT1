@@ -73,8 +73,15 @@ class QLKetQuaHocViewSet(viewsets.ViewSet):
         update_data["HeSoCuoiKy"] = he_so_ck
         update_data["DiemTrungBinh"] = round((diem_gk * he_so_gk + diem_ck * he_so_ck) / tong_he_so, 2)
 
+        # Cập nhật MaMonHoc và TenMonHoc nếu thay đổi
+        ma_mon = data.get("MaMonHoc", ketqua.get("MaMonHoc"))
+        update_data["MaMonHoc"] = ma_mon
+        mon_hoc = db.QLMonHoc.find_one({"MaMonHoc": ma_mon})
+        update_data["TenMonHoc"] = mon_hoc["TenMon"] if mon_hoc else "Không tìm thấy tên môn"
+
         db.QLKetQuaHoc.update_one({"_id": pk, "MaNguoiDung": user_id}, {"$set": update_data})
         return Response({"message": "Kết quả học đã được cập nhật."})
+
 
     def destroy(self, request, pk=None):
         user_id = request.session.get("user_id")
