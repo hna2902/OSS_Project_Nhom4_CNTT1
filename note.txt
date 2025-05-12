@@ -20,3 +20,6 @@ git push
 lệnh kéo project từ github về
 git pull origin main  # Hoặc `master` nếu repo dùng nhánh `master`
 
+cách chạy cả 2 thư mục:
+cd vào OSS_Project_Nhom4_CNTT1
+chạy lệnh: start-dev.bat
