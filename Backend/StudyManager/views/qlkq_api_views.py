@@ -19,29 +19,37 @@ class QLKetQuaHocViewSet(viewsets.ViewSet):
 
         data = request.data
         ma_mon = data.get("MaMonHoc")
-        diem_giua_ky = data.get("DiemGiuaKy")
-        diem_cuoi_ky = data.get("DiemCuoiKy")
+        diem_giua_ky = float(data.get("DiemGiuaKy", 0))
+        diem_cuoi_ky = float(data.get("DiemCuoiKy", 0))
 
-        # Truy vấn tên môn học từ bảng QLMonHoc
+        # Mặc định hệ số là 3-7
+        he_so_gk = float(data.get("HeSoGiuaKy", 3))
+        he_so_ck = float(data.get("HeSoCuoiKy", 7))
+        tong_he_so = he_so_gk + he_so_ck
+
+        # Tính điểm trung bình theo hệ số
+        diem_tb = round((diem_giua_ky * he_so_gk + diem_cuoi_ky * he_so_ck) / tong_he_so, 2)
+
         mon_hoc = db.QLMonHoc.find_one({"MaMonHoc": ma_mon})
         ten_mon = mon_hoc["TenMon"] if mon_hoc else "Không tìm thấy tên môn"
 
         ma_ket_qua = get_next_id("MAKQH", "MAKQH")
-        diem_tb = (float(diem_giua_ky) + float(diem_cuoi_ky)) / 2
 
-        # Thêm kết quả học vào cơ sở dữ liệu
         db.QLKetQuaHoc.insert_one({
             "_id": ma_ket_qua,
             "MaKetQuaHoc": ma_ket_qua,
             "MaMonHoc": ma_mon,
-            "TenMonHoc": ten_mon,  # Thêm tên môn vào dữ liệu
-            "DiemGiuaKy": float(diem_giua_ky),
-            "DiemCuoiKy": float(diem_cuoi_ky),
-            "DiemTrungBinh": round(diem_tb, 2),
+            "TenMonHoc": ten_mon,
+            "DiemGiuaKy": diem_giua_ky,
+            "DiemCuoiKy": diem_cuoi_ky,
+            "HeSoGiuaKy": he_so_gk,
+            "HeSoCuoiKy": he_so_ck,
+            "DiemTrungBinh": diem_tb,
             "MaNguoiDung": user_id,
         })
 
         return Response({"message": "Thêm kết quả học thành công!"})
+
 
     def update(self, request, pk=None):
         user_id = request.session.get("user_id")
@@ -49,27 +57,31 @@ class QLKetQuaHocViewSet(viewsets.ViewSet):
         if not ketqua:
             return Response({"error": "Không tìm thấy hoặc không có quyền sửa."}, status=404)
 
-        diem_giua_ky = request.data.get("DiemGiuaKy")
-        diem_cuoi_ky = request.data.get("DiemCuoiKy")
-        ma_mon = request.data.get("MaMonHoc")
-
+        data = request.data
         update_data = {}
 
-        if diem_giua_ky is not None:
-            update_data["DiemGiuaKy"] = float(diem_giua_ky)
-        if diem_cuoi_ky is not None:
-            update_data["DiemCuoiKy"] = float(diem_cuoi_ky)
-        if ma_mon:
-            update_data["MaMonHoc"] = ma_mon
+        diem_gk = float(data.get("DiemGiuaKy", ketqua.get("DiemGiuaKy", 0)))
+        diem_ck = float(data.get("DiemCuoiKy", ketqua.get("DiemCuoiKy", 0)))
 
-        # Cập nhật DiemTrungBinh nếu có đủ điểm
-        if "DiemGiuaKy" in update_data or "DiemCuoiKy" in update_data:
-            diem1 = update_data.get("DiemGiuaKy", ketqua.get("DiemGiuaKy", 0))
-            diem2 = update_data.get("DiemCuoiKy", ketqua.get("DiemCuoiKy", 0))
-            update_data["DiemTrungBinh"] = round((diem1 + diem2) / 2, 2)
+        he_so_gk = float(data.get("HeSoGiuaKy", ketqua.get("HeSoGiuaKy", 3)))
+        he_so_ck = float(data.get("HeSoCuoiKy", ketqua.get("HeSoCuoiKy", 7)))
+        tong_he_so = he_so_gk + he_so_ck
+
+        update_data["DiemGiuaKy"] = diem_gk
+        update_data["DiemCuoiKy"] = diem_ck
+        update_data["HeSoGiuaKy"] = he_so_gk
+        update_data["HeSoCuoiKy"] = he_so_ck
+        update_data["DiemTrungBinh"] = round((diem_gk * he_so_gk + diem_ck * he_so_ck) / tong_he_so, 2)
+
+        # Cập nhật MaMonHoc và TenMonHoc nếu thay đổi
+        ma_mon = data.get("MaMonHoc", ketqua.get("MaMonHoc"))
+        update_data["MaMonHoc"] = ma_mon
+        mon_hoc = db.QLMonHoc.find_one({"MaMonHoc": ma_mon})
+        update_data["TenMonHoc"] = mon_hoc["TenMon"] if mon_hoc else "Không tìm thấy tên môn"
 
         db.QLKetQuaHoc.update_one({"_id": pk, "MaNguoiDung": user_id}, {"$set": update_data})
         return Response({"message": "Kết quả học đã được cập nhật."})
+
 
     def destroy(self, request, pk=None):
         user_id = request.session.get("user_id")

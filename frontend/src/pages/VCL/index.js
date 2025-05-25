@@ -204,170 +204,201 @@ function VCL() {
   if (isLoading) return <div className="text-center my-5"><div className="spinner-border" role="status"><span className="visually-hidden">Đang tải...</span></div></div>;
   if (error) return <div className="alert alert-danger">Lỗi: {error}</div>;
 
-  return (
-    <Layout>
-      <div className="container py-4">
-        <h2 className="mb-4 text-center">Danh sách việc cần làm</h2>
-        <button type="button" className="btn btn-success" onClick={handleOpenAddModal}>
-          <i className="bi bi-plus-circle me-2"></i>Thêm Việc
-        </button>
+  // Cập nhật hàm filter thông báo công việc sắp đến hạn trong 3 ngày
+const filterUpcomingTasks = () => {
+  const now = new Date();
+  const threeDaysLater = new Date(now);
+  threeDaysLater.setDate(now.getDate() + 3); // Lấy ngày hiện tại + 3 ngày
 
-        {successMessage && (
-          <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">
-            {successMessage}
-            <button type="button" className="btn-close" onClick={() => setSuccessMessage('')} aria-label="Close"></button>
-          </div>
-        )}
+  // Lọc các công việc có Thời hạn trong vòng 3 ngày
+  return vieccanlam.filter((viec) => {
+    const thoiHan = new Date(viec.ThoiHan);
+    return thoiHan >= now && thoiHan <= threeDaysLater;
+  });
+};
 
-        {/* Phần lọc */}
-        <div className="d-flex mb-3">
-          <select
-            id="tenMonFilter"
-            className="form-control me-2"
-            value={tenMonFilter}
-            onChange={(e) => setTenMonFilter(e.target.value)}
-          >
-            <option value="">Lọc theo môn học</option>
-            {monhoc.map(mon => (
-              <option key={mon.MaMonHoc} value={mon.TenMon.toLowerCase()}>
-                {mon.TenMon}
-              </option>
+const upcomingTasks = filterUpcomingTasks();
+
+return (
+  <Layout>
+    <div className="container py-4">
+      <h2 className="mb-4 text-center">Danh sách việc cần làm</h2>
+
+      {/* Hiển thị bảng thông báo công việc sắp đến hạn */}
+      {upcomingTasks.length > 0 && (
+        <div className="alert alert-warning alert-dismissible fade show mt-4" role="alert">
+          <h4 className="alert-heading">Công việc sắp đến hạn</h4>
+          <ul>
+            {upcomingTasks.map((viec) => (
+              <li key={viec.MaViec}>
+                <strong>{viec.TenMon}</strong>: {viec.NhacNho} (Thời hạn: {formatDate(viec.ThoiHan)})
+              </li>
             ))}
-          </select>
-          <input
-            id="thoiHanFilter"
-            type="date"
-            className="form-control"
-            value={thoiHanFilter}
-            onChange={(e) => setThoiHanFilter(e.target.value)}
-          />
-          <button className="btn btn-secondary ms-2" onClick={resetFilter}>Reset</button>
-          <button className="btn btn-primary ms-2" onClick={filterTable}>Xác nhận</button>
+          </ul>
+          <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+      )}
 
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="card-title mb-0">Danh sách công việc</h5>
-            </div>
-            <div className="table-responsive">
-              <table id="viecTable" className="table table-hover table-striped">
-                <thead className="table-light">
-                  <tr>
-                    <th>Tên môn</th>
-                    <th>Nhắc nhở</th>
-                    <th>Ghi chú</th>
-                    <th>Thời hạn</th>
-                    <th>Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {vieccanlam.length > 0 ? (
-                    vieccanlam.map((viec) => (
-                      <tr key={viec.MaViec} data-tenmon={viec.TenMon.toLowerCase()} data-thoihan={viec.ThoiHan}>
-                        <td>{viec.TenMon}</td>
-                        <td>{viec.NhacNho}</td>
-                        <td>{viec.GhiChu}</td>
-                        <td>{formatDate(viec.ThoiHan)}</td>
-                        <td>
-                          <button className="btn btn-warning me-2" onClick={() => handleEditViec(viec)}>
-                            <i className="bi bi-pencil"></i>
-                          </button>
-                          <button className="btn btn-danger" onClick={() => handleDeleteViec(viec.MaViec)}>
-                            <i className="bi bi-trash"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center">Không có công việc nào</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      {/* Phần còn lại của code (bảng danh sách công việc) */}
+      <button type="button" className="btn btn-success" onClick={handleOpenAddModal}>
+        <i className="bi bi-plus-circle me-2"></i>Thêm Việc
+      </button>
+
+      {successMessage && (
+        <div className="alert alert-success alert-dismissible fade show mt-3" role="alert">
+          {successMessage}
+          <button type="button" className="btn-close" onClick={() => setSuccessMessage('')} aria-label="Close"></button>
         </div>
+      )}
 
-        {/* Modal thêm/sửa việc */}
-        <div className="modal fade" id="themViecModal" tabIndex="-1" aria-labelledby="themViecModalLabel" aria-hidden="true">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="themViecModalLabel">Thêm/Sửa Việc</h5>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div className="modal-body">
-                {/* Hiển thị lỗi nếu có */}
-                {error && (
-                  <div className="alert alert-danger" role="alert">
-                    {error}
-                  </div>
-                )}
-                <form onSubmit={handleAddOrUpdateViec}>
-                  <div className="mb-3">
-                    <label htmlFor="NhacNho" className="form-label">Nhắc nhở</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="NhacNho"
-                      name="NhacNho"
-                      value={formData.NhacNho}
-                      onChange={handleInputChange} required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="GhiChu" className="form-label">Ghi chú</label>
-                    <textarea
-                      className="form-control"
-                      id="GhiChu"
-                      name="GhiChu"
-                      value={formData.GhiChu}
-                      onChange={handleInputChange} required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="ThoiHan" className="form-label">Thời hạn</label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      id="ThoiHan"
-                      name="ThoiHan"
-                      value={formData.ThoiHan}
-                      onChange={handleInputChange} required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label htmlFor="MaMonHoc" className="form-label">Môn học</label>
-                    <select
-                      className="form-control"
-                      id="MaMonHoc"
-                      name="MaMonHoc"
-                      value={formData.MaMonHoc}
-                      onChange={handleInputChange} required
-                    >
-                      <option value="">Chọn môn học</option>
-                      {monhoc.map((mon) => (
-                        <option key={mon.MaMonHoc} value={mon.MaMonHoc}>
-                          {mon.TenMon}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" className="btn btn-primary">{selectedViec ? 'Cập nhật' : 'Thêm'}</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      {/* Phần lọc */}
+      <div className="d-flex mb-3">
+        <select
+          id="tenMonFilter"
+          className="form-control me-2"
+          value={tenMonFilter}
+          onChange={(e) => setTenMonFilter(e.target.value)}
+        >
+          <option value="">Lọc theo môn học</option>
+          {monhoc.map(mon => (
+            <option key={mon.MaMonHoc} value={mon.TenMon.toLowerCase()}>
+              {mon.TenMon}
+            </option>
+          ))}
+        </select>
+        <input
+          id="thoiHanFilter"
+          type="date"
+          className="form-control"
+          value={thoiHanFilter}
+          onChange={(e) => setThoiHanFilter(e.target.value)}
+        />
+        <button className="btn btn-secondary ms-2" onClick={resetFilter}>Reset</button>
+        <button className="btn btn-primary ms-2" onClick={filterTable}>Xác nhận</button>
       </div>
-    </Layout>
-  );
+
+      <div className="card shadow-sm">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="card-title mb-0">Danh sách công việc</h5>
+          </div>
+          <div className="table-responsive">
+            <table id="viecTable" className="table table-hover table-striped">
+              <thead className="table-light">
+                <tr>
+                  <th>Tên môn</th>
+                  <th>Nhắc nhở</th>
+                  <th>Ghi chú</th>
+                  <th>Thời hạn</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vieccanlam.length > 0 ? (
+                  vieccanlam.map((viec) => (
+                    <tr key={viec.MaViec} data-tenmon={viec.TenMon.toLowerCase()} data-thoihan={viec.ThoiHan}>
+                      <td>{viec.TenMon}</td>
+                      <td>{viec.NhacNho}</td>
+                      <td>{viec.GhiChu}</td>
+                      <td>{formatDate(viec.ThoiHan)}</td>
+                      <td>
+                        <button className="btn btn-warning me-2" onClick={() => handleEditViec(viec)}>
+                          <i className="bi bi-pencil"></i>
+                        </button>
+                        <button className="btn btn-danger" onClick={() => handleDeleteViec(viec.MaViec)}>
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="text-center">Không có công việc nào</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal thêm/sửa việc */}
+      <div className="modal fade" id="themViecModal" tabIndex="-1" aria-labelledby="themViecModalLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="themViecModalLabel">Thêm/Sửa Việc</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body">
+              {/* Hiển thị lỗi nếu có */}
+              {error && (
+                <div className="alert alert-danger" role="alert">
+                  {error}
+                </div>
+              )}
+              <form onSubmit={handleAddOrUpdateViec}>
+                <div className="mb-3">
+                  <label htmlFor="NhacNho" className="form-label">Nhắc nhở</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="NhacNho"
+                    name="NhacNho"
+                    value={formData.NhacNho}
+                    onChange={handleInputChange} required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="GhiChu" className="form-label">Ghi chú</label>
+                  <textarea
+                    className="form-control"
+                    id="GhiChu"
+                    name="GhiChu"
+                    value={formData.GhiChu}
+                    onChange={handleInputChange} required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="ThoiHan" className="form-label">Thời hạn</label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    id="ThoiHan"
+                    name="ThoiHan"
+                    value={formData.ThoiHan}
+                    onChange={handleInputChange} required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="MaMonHoc" className="form-label">Môn học</label>
+                  <select
+                    className="form-control"
+                    id="MaMonHoc"
+                    name="MaMonHoc"
+                    value={formData.MaMonHoc}
+                    onChange={handleInputChange} required
+                  >
+                    <option value="">Chọn môn học</option>
+                    {monhoc.map((mon) => (
+                      <option key={mon.MaMonHoc} value={mon.MaMonHoc}>
+                        {mon.TenMon}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                  <button type="submit" className="btn btn-primary">{selectedViec ? 'Cập nhật' : 'Thêm'}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Layout>
+);
 }
 
 export default VCL;
