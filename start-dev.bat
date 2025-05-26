@@ -1,5 +1,8 @@
 @echo off
 
+REM Kích hoạt virtual environment
+call Backend\venv\Scripts\activate
+
 echo === Starting Django Server ===
 start "" /B cmd /C "cd Backend && python manage.py runserver"
 
